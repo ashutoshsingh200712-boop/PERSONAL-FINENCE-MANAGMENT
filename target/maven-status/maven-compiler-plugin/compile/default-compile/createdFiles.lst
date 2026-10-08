@@ -1,0 +1,12 @@
+com\financeapp\dao\package-info.class
+com\financeapp\util\package-info.class
+com\financeapp\service\package-info.class
+com\financeapp\planner\package-info.class
+com\financeapp\task\package-info.class
+com\financeapp\listener\package-info.class
+com\financeapp\model\package-info.class
+com\financeapp\filter\package-info.class
+com\financeapp\servlet\package-info.class
+com\financeapp\util\DBConnection.class
+com\financeapp\exception\package-info.class
+com\financeapp\dao\jdbc\package-info.class
