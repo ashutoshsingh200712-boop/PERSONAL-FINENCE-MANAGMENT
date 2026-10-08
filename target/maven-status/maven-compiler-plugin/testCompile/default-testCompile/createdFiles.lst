@@ -1,5 +1,6 @@
 com\financeapp\service\PlannerServiceMockitoTest$2.class
 com\financeapp\task\RecurringEntryTaskTest.class
+com\financeapp\e2e\EndToEndFlowTest.class
 com\financeapp\listener\AppStartupListenerTest.class
 com\financeapp\service\PlannerServiceMockitoTest$1.class
 com\financeapp\task\PlanMonitorTaskTest.class

@@ -1,8 +1,10 @@
-# Database Configuration for MySQL 8
+# Database Configuration Template for MySQL 8
+# Copy this file to db.properties or set environment variables:
+#   DB_URL, DB_USER, DB_PASSWORD
 db.driver=com.mysql.cj.jdbc.Driver
 db.url=jdbc:mysql://localhost:3306/finance_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8
 db.username=root
-db.password=
+db.password=your_mysql_password_here
 
-# Timeout configuration
+# Connection Timeout (ms)
 db.connection.timeout=5000

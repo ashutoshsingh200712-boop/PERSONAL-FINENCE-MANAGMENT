@@ -43,7 +43,7 @@ public final class DBConnection {
         driver = resolveConfig("DB_DRIVER", "db.driver", props.getProperty("db.driver", "com.mysql.cj.jdbc.Driver"));
         url = resolveConfig("DB_URL", "db.url", props.getProperty("db.url", "jdbc:mysql://localhost:3306/finance_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8"));
         username = resolveConfig("DB_USER", "db.username", props.getProperty("db.username", "root"));
-        password = resolveConfig("DB_PASSWORD", "db.password", props.getProperty("db.password", "root"));
+        password = resolveConfig("DB_PASSWORD", "db.password", props.getProperty("db.password", ""));
 
         // 3. Register JDBC driver class
         try {

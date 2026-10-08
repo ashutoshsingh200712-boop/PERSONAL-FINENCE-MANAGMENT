@@ -1,0 +1,20 @@
+target/
+*.class
+*.war
+*.ear
+*.jar
+.DS_Store
+Thumbs.db
+*.log
+.settings/
+.project
+.classpath
+.idea/
+*.iml
+*.sublime-project
+*.sublime-workspace
+.vscode/
+
+# Local database secrets overrides
+*.local.properties
+.env
