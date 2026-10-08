@@ -1,2 +1,7 @@
+com\financeapp\service\PlannerServiceMockitoTest$2.class
+com\financeapp\service\PlannerServiceMockitoTest$1.class
 com\financeapp\util\DBConnectionTest.class
+com\financeapp\service\PlannerServiceMockitoTest$3.class
+com\financeapp\planner\PlannerEngineTest.class
+com\financeapp\service\PlannerServiceMockitoTest.class
 com\financeapp\dao\jdbc\JdbcDataLayerIntegrationTest.class

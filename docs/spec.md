@@ -97,3 +97,42 @@ The AI Smart Spending Planner implements a deterministic financial heuristic alg
 - `com.financeapp.task`: Scheduled background jobs (e.g., automated monthly plan generation, threshold checks)
 - `com.financeapp.exception`: Custom application, database, and validation exceptions
 - `com.financeapp.util`: `DBConnection`, `PasswordUtil`, `DateUtil`, `ValidationUtil`
+
+---
+
+### 7. AI Smart Spending Planner (Rule-Based & Explainable Engine)
+
+#### 7.1 Allocation Strategies
+- `AllocationStrategy`: Functional interface returning `Map<String, BigDecimal>` category allocations from `(BigDecimal available, BigDecimal savingsGoal)`.
+- `DefaultStrategy`:
+  - Categories: Food (40%), Savings (20%), Emergency (15%), Entertainment (10%), Other (15%).
+  - Uses `LinkedHashMap` preserving canonical allocation ordering.
+  - Final category absorbs any rounding difference to ensure $\sum \text{Allocations} = \text{Available}$ to 2 decimal places.
+- `SavingsFocusedStrategy`:
+  - Evaluates user's explicit savings target goal.
+  - Clamps savings share: $\text{share} = \text{clamp}\left(\frac{\text{goal}}{\text{available}}, 20\%, 40\%\right)$.
+  - Scales remaining categories dynamically: $\text{scale} = \frac{1 - \text{share}}{0.80}$.
+  - Exposes an explicit warning message if target goal was clamped below 20% or above 40%.
+
+#### 7.2 Pace Monitoring & Recalculation
+- `PlanStatus`:
+  - `UNDER`: Spending pace $< 80\%$ of expected linear trajectory.
+  - `ON_TRACK`: Spending pace between $80\%$ and $110\%$.
+  - `OVER`: Spending pace $> 110\%$ of expected linear trajectory.
+- Daily & Weekly Limits:
+  - $\text{Daily Limit} = \frac{\text{Budget}}{\text{DaysInMonth}}$
+  - $\text{Weekly Limit} = \text{Daily Limit} \times 7$
+- Mid-Month Recalculation:
+  - $\text{Adjusted Daily Limit} = \frac{\max(\text{Budget} - \text{Spent}, 0)}{\text{DaysLeft}}$
+  - $\text{Surplus} = \max(\text{ExpectedSpentToDate} - \text{ActualSpentToDate}, 0)$
+  - $\text{Spread Limit} = \frac{\text{Budget} - \text{Spent}}{\text{DaysLeft}}$
+
+#### 7.3 Explainable Advice Rules
+- `AdviceRule`: Rule interface returning `Optional<AdviceResult>`.
+  - `OverspendingRule`: Fires when pace ratio $> 110\%$; explains overspending and provides the lowered daily limit.
+  - `SurplusRule`: Fires when pace ratio $< 80\%$; highlights the surplus available and increased spread daily limit.
+  - `LowBalanceRule`: Fires when remaining balance is critically low or zero relative to days left.
+
+#### 7.4 Streams & Aggregations
+- Category grouping via `Collectors.groupingBy()` on transaction streams.
+- Multi-month trend tracking via sorted `TreeMap<YearMonth, BigDecimal>`.
