@@ -22,6 +22,7 @@ public interface ExpenseDAO {
      * Filters expenses by billing month (YYYY-MM) and optional category with pagination.
      */
     List<Expense> findByMonthAndCategory(long userId, String month, Long categoryId, int limit, int offset);
+    List<Expense> findByMonthAndCategory(Connection conn, long userId, String month, Long categoryId, int limit, int offset);
 
     /**
      * Returns total count of filtered expenses for pagination calculation.

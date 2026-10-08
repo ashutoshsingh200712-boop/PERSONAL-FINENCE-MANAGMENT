@@ -34,6 +34,58 @@
 
         <jsp:include page="/WEB-INF/views/common/flash.jsp"/>
 
+        <!-- Notifications & Background Task Alerts -->
+        <c:if test="${not empty notifications}">
+            <div class="card mb-4 border-start border-4 border-warning shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center py-2 px-3">
+                    <h6 class="fw-bold mb-0 text-dark d-flex align-items-center">
+                        <span class="badge bg-danger rounded-pill me-2">${notifications.size()}</span>
+                        Notifications &amp; AI System Alerts
+                    </h6>
+                    <form method="post" action="${pageContext.request.contextPath}/notifications" class="mb-0">
+                        <input type="hidden" name="csrfToken" value="${csrfToken}">
+                        <input type="hidden" name="action" value="markAllRead">
+                        <button type="submit" class="btn btn-sm btn-outline-secondary py-0">Mark All as Read</button>
+                    </form>
+                </div>
+                <div class="card-body p-3">
+                    <div class="list-group list-group-flush">
+                        <c:forEach var="notif" items="${notifications}">
+                            <div class="list-group-item d-flex justify-content-between align-items-start px-0 py-2 border-bottom">
+                                <div class="ms-2 me-auto">
+                                    <div class="fw-bold d-flex align-items-center">
+                                        <c:choose>
+                                            <c:when test="${notif.type == 'ALERT'}">
+                                                <span class="badge bg-danger me-2">ALERT</span>
+                                            </c:when>
+                                            <c:when test="${notif.type == 'WARNING'}">
+                                                <span class="badge bg-warning text-dark me-2">WARNING</span>
+                                            </c:when>
+                                            <c:when test="${notif.type == 'ADVICE'}">
+                                                <span class="badge bg-info text-dark me-2">ADVICE</span>
+                                            </c:when>
+                                            <c:otherwise>
+                                                <span class="badge bg-primary me-2">INFO</span>
+                                            </c:otherwise>
+                                        </c:choose>
+                                        <c:out value="${notif.title}"/>
+                                    </div>
+                                    <div class="text-secondary small mt-1"><c:out value="${notif.message}"/></div>
+                                    <div class="text-muted small mt-1" style="font-size: 0.75rem;"><c:out value="${notif.createdAt}"/></div>
+                                </div>
+                                <form method="post" action="${pageContext.request.contextPath}/notifications" class="ms-2 mb-0">
+                                    <input type="hidden" name="csrfToken" value="${csrfToken}">
+                                    <input type="hidden" name="action" value="markRead">
+                                    <input type="hidden" name="id" value="${notif.id}">
+                                    <button type="submit" class="btn btn-sm btn-outline-success py-0 px-2" title="Mark as read">&check;</button>
+                                </form>
+                            </div>
+                        </c:forEach>
+                    </div>
+                </div>
+            </div>
+        </c:if>
+
         <!-- Key Metrics Cards -->
         <div class="row g-3 mb-4">
             <div class="col-6 col-md-3">

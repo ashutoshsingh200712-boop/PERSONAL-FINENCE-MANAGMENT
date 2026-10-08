@@ -1,6 +1,7 @@
 com\financeapp\dao\package-info.class
 com\financeapp\servlet\AdminServlet.class
 com\financeapp\servlet\LogoutServlet.class
+com\financeapp\listener\AppStartupListener.class
 com\financeapp\service\package-info.class
 com\financeapp\dao\ExpenseDAO.class
 com\financeapp\listener\package-info.class
@@ -11,6 +12,7 @@ com\financeapp\planner\RecalculationResult.class
 com\financeapp\model\PlanItem.class
 com\financeapp\dao\jdbc\JdbcFixedExpenseDAO.class
 com\financeapp\model\Income$Frequency.class
+com\financeapp\task\RecurringEntryTask.class
 com\financeapp\dao\jdbc\JdbcCategoryDAO.class
 com\financeapp\dao\jdbc\JdbcSpendingPlanDAO.class
 com\financeapp\planner\LowBalanceRule.class
@@ -43,6 +45,7 @@ com\financeapp\dao\SpendingPlanDAO.class
 com\financeapp\model\Role.class
 com\financeapp\exception\DataAccessException.class
 com\financeapp\planner\SurplusRule.class
+com\financeapp\servlet\NotificationServlet.class
 com\financeapp\task\package-info.class
 com\financeapp\model\Transaction.class
 com\financeapp\servlet\ExpenseServlet.class
@@ -51,6 +54,8 @@ com\financeapp\dao\jdbc\JdbcExpenseDAO.class
 com\financeapp\dao\jdbc\JdbcIncomeDAO.class
 com\financeapp\filter\RoleFilter.class
 com\financeapp\dao\jdbc\package-info.class
+com\financeapp\listener\AppStartupListener$1.class
+com\financeapp\task\PlanMonitorTask.class
 com\financeapp\model\Notification.class
 com\financeapp\model\Income.class
 com\financeapp\dao\SettingsDAO.class

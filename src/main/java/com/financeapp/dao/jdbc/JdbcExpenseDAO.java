@@ -126,6 +126,15 @@ public class JdbcExpenseDAO implements ExpenseDAO {
 
     @Override
     public List<Expense> findByMonthAndCategory(long userId, String month, Long categoryId, int limit, int offset) {
+        try (Connection conn = DBConnection.getConnection()) {
+            return findByMonthAndCategory(conn, userId, month, categoryId, limit, offset);
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to filter expenses by month and category", e);
+        }
+    }
+
+    @Override
+    public List<Expense> findByMonthAndCategory(Connection conn, long userId, String month, Long categoryId, int limit, int offset) {
         YearMonth ym = parseYearMonth(month);
         LocalDate start = ym.atDay(1);
         LocalDate end = ym.atEndOfMonth();
@@ -142,8 +151,7 @@ public class JdbcExpenseDAO implements ExpenseDAO {
         sql.append("ORDER BY e.expense_date DESC, e.id DESC LIMIT ? OFFSET ?");
 
         List<Expense> list = new ArrayList<>();
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
+        try (PreparedStatement stmt = conn.prepareStatement(sql.toString())) {
             int paramIndex = 1;
             stmt.setLong(paramIndex++, userId);
             stmt.setDate(paramIndex++, Date.valueOf(start));
@@ -160,7 +168,7 @@ public class JdbcExpenseDAO implements ExpenseDAO {
                 }
             }
         } catch (SQLException e) {
-            throw new DataAccessException("Failed to filter expenses by month and category", e);
+            throw new DataAccessException("Failed to filter expenses by month and category with connection: " + e.getMessage(), e);
         }
         return list;
     }

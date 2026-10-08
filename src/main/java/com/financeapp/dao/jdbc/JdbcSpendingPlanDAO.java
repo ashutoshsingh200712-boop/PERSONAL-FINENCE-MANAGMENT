@@ -37,6 +37,10 @@ public class JdbcSpendingPlanDAO implements SpendingPlanDAO {
             "SELECT id, user_id, plan_month, total_income, total_fixed_expenses, disposable_income, status, created_at, updated_at " +
             "FROM spending_plans WHERE user_id = ? ORDER BY plan_month DESC";
 
+    private static final String SQL_FIND_ALL_ACTIVE =
+            "SELECT id, user_id, plan_month, total_income, total_fixed_expenses, disposable_income, status, created_at, updated_at " +
+            "FROM spending_plans WHERE status = 'ACTIVE' ORDER BY id ASC";
+
     private static final String SQL_FIND_ITEMS_BY_PLAN =
             "SELECT pi.id, pi.plan_id, pi.category_id, c.name AS category_name, pi.allocated_amount, pi.weight_percentage, pi.notes, pi.created_at " +
             "FROM plan_items pi LEFT JOIN categories c ON pi.category_id = c.id WHERE pi.plan_id = ? ORDER BY pi.allocated_amount DESC";
@@ -189,6 +193,31 @@ public class JdbcSpendingPlanDAO implements SpendingPlanDAO {
             }
         } catch (SQLException e) {
             throw new DataAccessException("Failed to find spending plans for user: " + userId, e);
+        }
+        return list;
+    }
+
+    @Override
+    public List<SpendingPlan> findAllActive() {
+        try (Connection conn = DBConnection.getConnection()) {
+            return findAllActive(conn);
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to find active spending plans: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<SpendingPlan> findAllActive(Connection conn) {
+        List<SpendingPlan> list = new ArrayList<>();
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_FIND_ALL_ACTIVE);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                SpendingPlan plan = mapRowToPlan(rs);
+                plan.setItems(findItemsForPlan(conn, plan.getId()));
+                list.add(plan);
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to query active spending plans: " + e.getMessage(), e);
         }
         return list;
     }

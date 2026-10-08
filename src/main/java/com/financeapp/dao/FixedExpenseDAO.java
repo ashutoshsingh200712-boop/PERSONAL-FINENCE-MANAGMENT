@@ -17,6 +17,10 @@ public interface FixedExpenseDAO {
     Optional<FixedExpense> findById(long id);
     List<FixedExpense> findByUserId(long userId);
     List<FixedExpense> findActiveByUserId(long userId);
+    List<FixedExpense> findActiveByDueDay(int dueDay);
+    List<FixedExpense> findActiveByDueDay(Connection conn, int dueDay);
+    List<FixedExpense> findAllActive();
+    List<FixedExpense> findAllActive(Connection conn);
 
     boolean update(FixedExpense fixedExpense);
     boolean update(Connection conn, FixedExpense fixedExpense);

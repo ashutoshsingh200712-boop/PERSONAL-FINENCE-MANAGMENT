@@ -32,6 +32,14 @@ public class JdbcFixedExpenseDAO implements FixedExpenseDAO {
             "SELECT fe.id, fe.user_id, fe.category_id, c.name AS category_name, fe.title, fe.amount, fe.due_day, fe.is_active, fe.notes, fe.created_at " +
             "FROM fixed_expenses fe LEFT JOIN categories c ON fe.category_id = c.id WHERE fe.user_id = ? AND fe.is_active = TRUE ORDER BY fe.due_day ASC";
 
+    private static final String SQL_FIND_ACTIVE_BY_DUE_DAY =
+            "SELECT fe.id, fe.user_id, fe.category_id, c.name AS category_name, fe.title, fe.amount, fe.due_day, fe.is_active, fe.notes, fe.created_at " +
+            "FROM fixed_expenses fe LEFT JOIN categories c ON fe.category_id = c.id WHERE fe.is_active = TRUE AND fe.due_day = ? ORDER BY fe.id ASC";
+
+    private static final String SQL_FIND_ALL_ACTIVE =
+            "SELECT fe.id, fe.user_id, fe.category_id, c.name AS category_name, fe.title, fe.amount, fe.due_day, fe.is_active, fe.notes, fe.created_at " +
+            "FROM fixed_expenses fe LEFT JOIN categories c ON fe.category_id = c.id WHERE fe.is_active = TRUE ORDER BY fe.id ASC";
+
     private static final String SQL_UPDATE =
             "UPDATE fixed_expenses SET category_id = ?, title = ?, amount = ?, due_day = ?, is_active = ?, notes = ? " +
             "WHERE id = ?";
@@ -127,6 +135,54 @@ public class JdbcFixedExpenseDAO implements FixedExpenseDAO {
             }
         } catch (SQLException e) {
             throw new DataAccessException("Failed to find active fixed expenses by user ID: " + userId, e);
+        }
+        return list;
+    }
+
+    @Override
+    public List<FixedExpense> findActiveByDueDay(int dueDay) {
+        try (Connection conn = DBConnection.getConnection()) {
+            return findActiveByDueDay(conn, dueDay);
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to find active fixed expenses by due day: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<FixedExpense> findActiveByDueDay(Connection conn, int dueDay) {
+        List<FixedExpense> list = new ArrayList<>();
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_FIND_ACTIVE_BY_DUE_DAY)) {
+            stmt.setInt(1, dueDay);
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    list.add(mapRowToFixedExpense(rs));
+                }
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to query active fixed expenses by due day with conn: " + e.getMessage(), e);
+        }
+        return list;
+    }
+
+    @Override
+    public List<FixedExpense> findAllActive() {
+        try (Connection conn = DBConnection.getConnection()) {
+            return findAllActive(conn);
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to find all active fixed expenses: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public List<FixedExpense> findAllActive(Connection conn) {
+        List<FixedExpense> list = new ArrayList<>();
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_FIND_ALL_ACTIVE);
+             ResultSet rs = stmt.executeQuery()) {
+            while (rs.next()) {
+                list.add(mapRowToFixedExpense(rs));
+            }
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to query all active fixed expenses with conn: " + e.getMessage(), e);
         }
         return list;
     }

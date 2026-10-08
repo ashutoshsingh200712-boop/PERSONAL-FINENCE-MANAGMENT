@@ -11,6 +11,17 @@
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
 
+    <!-- Background Multithreading Tasks Interval (Demo mode: 60 seconds = 1 minute) -->
+    <context-param>
+        <param-name>taskIntervalSeconds</param-name>
+        <param-value>60</param-value>
+    </context-param>
+
+    <!-- Application Startup Listener -->
+    <listener>
+        <listener-class>com.financeapp.listener.AppStartupListener</listener-class>
+    </listener>
+
     <!-- Session Configuration -->
     <session-config>
         <session-timeout>30</session-timeout>
