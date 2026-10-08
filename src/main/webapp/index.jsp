@@ -181,6 +181,18 @@
             University Personal Finance Management Platform engineered with Jakarta Servlet 6.0, pure JDBC DAO architecture, and deterministic smart allocation heuristics.
         </p>
 
+        <div style="margin-bottom: 2.5rem;">
+            <c:choose>
+                <c:when test="${not empty sessionScope.userId}">
+                    <a href="${pageContext.request.contextPath}/dashboard" class="btn btn-primary btn-lg px-4 me-3" style="background: var(--primary-gradient); border: none; font-weight: 600; padding: 0.8rem 1.8rem; border-radius: 9999px; color: #fff; text-decoration: none;">Go to My Dashboard →</a>
+                </c:when>
+                <c:otherwise>
+                    <a href="${pageContext.request.contextPath}/register" class="btn btn-primary btn-lg px-4 me-3" style="background: var(--primary-gradient); border: none; font-weight: 600; padding: 0.8rem 1.8rem; border-radius: 9999px; color: #fff; text-decoration: none;">Get Started Free →</a>
+                    <a href="${pageContext.request.contextPath}/login" class="btn btn-outline-light btn-lg px-4" style="font-weight: 600; padding: 0.8rem 1.8rem; border-radius: 9999px; border: 1px solid var(--border-glass); color: #fff; text-decoration: none;">Sign In</a>
+                </c:otherwise>
+            </c:choose>
+        </div>
+
         <div class="grid-cards">
             <div class="card">
                 <div class="card-icon" style="background: rgba(99, 102, 241, 0.15); color: #818CF8;">⚖️</div>

@@ -4,4 +4,5 @@ com\financeapp\util\DBConnectionTest.class
 com\financeapp\service\PlannerServiceMockitoTest$3.class
 com\financeapp\planner\PlannerEngineTest.class
 com\financeapp\service\PlannerServiceMockitoTest.class
+com\financeapp\servlet\WebSecurityFilterTest.class
 com\financeapp\dao\jdbc\JdbcDataLayerIntegrationTest.class

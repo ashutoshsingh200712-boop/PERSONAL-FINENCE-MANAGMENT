@@ -31,6 +31,11 @@ public class AuditLog {
         setCreatedAt(createdAt);
     }
 
+    public AuditLog(Long userId, String action, String entityType,
+                    Long entityId, String details, String ipAddress, LocalDateTime createdAt) {
+        this(null, userId, action, entityType, entityId, details, ipAddress, createdAt);
+    }
+
     public Long getId() {
         return id;
     }
