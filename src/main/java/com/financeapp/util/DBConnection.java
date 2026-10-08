@@ -55,16 +55,12 @@ public final class DBConnection {
         }
     }
 
+    private static java.util.function.Supplier<Connection> customConnectionSupplier = null;
+
     private DBConnection() {
         // Utility class: prevent instantiation
     }
 
-    /**
-     * Resolves configuration property with priority:
-     * 1. Environment Variable
-     * 2. JVM System Property (-Dkey=value)
-     * 3. Fallback default value (from properties file or hardcoded)
-     */
     private static String resolveConfig(String envKey, String sysPropKey, String defaultValue) {
         String envValue = System.getenv(envKey);
         if (envValue != null && !envValue.trim().isEmpty()) {
@@ -80,12 +76,29 @@ public final class DBConnection {
     }
 
     /**
+     * Sets a custom connection supplier (primarily for automated integration tests).
+     */
+    public static void setCustomConnectionSupplier(java.util.function.Supplier<Connection> supplier) {
+        customConnectionSupplier = supplier;
+    }
+
+    /**
+     * Resets the custom connection supplier back to default DriverManager resolution.
+     */
+    public static void resetCustomConnectionSupplier() {
+        customConnectionSupplier = null;
+    }
+
+    /**
      * Obtains a new database connection.
      *
      * @return an active {@link Connection}
      * @throws SQLException if a database access error occurs
      */
     public static Connection getConnection() throws SQLException {
+        if (customConnectionSupplier != null) {
+            return customConnectionSupplier.get();
+        }
         return DriverManager.getConnection(url, username, password);
     }
 

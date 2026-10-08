@@ -56,6 +56,14 @@
             <version>${mysql.connector.version}</version>
         </dependency>
 
+        <!-- H2 Database for In-Memory Integration Testing in MySQL Mode -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>2.2.224</version>
+            <scope>test</scope>
+        </dependency>
+
         <!-- jBCrypt for password hashing -->
         <dependency>
             <groupId>org.mindrot</groupId>

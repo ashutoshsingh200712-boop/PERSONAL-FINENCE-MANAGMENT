@@ -1,1 +1,2 @@
 com\financeapp\util\DBConnectionTest.class
+com\financeapp\dao\jdbc\JdbcDataLayerIntegrationTest.class
