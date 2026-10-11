@@ -2,11 +2,11 @@
 -- Personal Finance Management Platform - MySQL 8 Schema
 -- ============================================================
 
-CREATE DATABASE IF NOT EXISTS `finance_db`
+CREATE DATABASE IF NOT EXISTS `financeapp`
   DEFAULT CHARACTER SET utf8mb4
   COLLATE utf8mb4_unicode_ci;
 
-USE `finance_db`;
+USE `financeapp`;
 
 -- Drop existing tables in reverse dependency order
 DROP TABLE IF EXISTS `audit_logs`;

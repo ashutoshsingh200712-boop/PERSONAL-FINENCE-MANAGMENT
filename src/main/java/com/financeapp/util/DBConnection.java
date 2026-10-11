@@ -41,7 +41,7 @@ public final class DBConnection {
 
         // 2. Resolve parameters with hierarchy: Environment Variable -> System Property -> db.properties -> Default
         driver = resolveConfig("DB_DRIVER", "db.driver", props.getProperty("db.driver", "com.mysql.cj.jdbc.Driver"));
-        url = resolveConfig("DB_URL", "db.url", props.getProperty("db.url", "jdbc:mysql://localhost:3306/finance_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8"));
+        url = resolveConfig("DB_URL", "db.url", props.getProperty("db.url", "jdbc:mysql://localhost:3306/financeapp?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&characterEncoding=UTF-8"));
         username = resolveConfig("DB_USER", "db.username", props.getProperty("db.username", "root"));
         password = resolveConfig("DB_PASSWORD", "db.password", props.getProperty("db.password", ""));
 
@@ -172,5 +172,22 @@ public final class DBConnection {
      */
     public static String getDriver() {
         return driver;
+    }
+
+    /**
+     * Standalone verification method that attempts to establish a connection and prints "Connected".
+     *
+     * @param args command line arguments
+     */
+    public static void main(String[] args) {
+        try (Connection conn = getConnection()) {
+            if (conn != null && !conn.isClosed()) {
+                System.out.println("Connected");
+            } else {
+                System.err.println("Connection could not be established.");
+            }
+        } catch (SQLException e) {
+            System.err.println("Database connection failed: " + e.getMessage());
+        }
     }
 }

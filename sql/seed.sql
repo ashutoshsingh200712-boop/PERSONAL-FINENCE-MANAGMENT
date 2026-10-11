@@ -2,7 +2,7 @@
 -- Personal Finance Management Platform - MySQL 8 Seed Data
 -- ============================================================
 
-USE `finance_db`;
+USE `financeapp`;
 
 -- Clear existing data in reverse dependency order
 SET FOREIGN_KEY_CHECKS = 0;

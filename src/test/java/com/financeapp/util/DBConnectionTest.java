@@ -38,6 +38,12 @@ class DBConnectionTest {
     }
 
     @Test
+    @DisplayName("Should run main() verification method without crashing")
+    void testMainMethodExecution() {
+        assertDoesNotThrow(() -> DBConnection.main(new String[]{}));
+    }
+
+    @Test
     @DisplayName("Should verify BCrypt password hashes match expected seed passwords")
     void testBCryptSeedPasswordVerification() {
         String adminHash = "$2a$10$htdjpO4It8oNPfOGPnzXe.ebyQ2znSERLUqhfzw.4SqvHberNARiu";

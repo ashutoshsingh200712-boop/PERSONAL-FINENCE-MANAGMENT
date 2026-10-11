@@ -18,3 +18,5 @@ Thumbs.db
 # Local database secrets overrides
 *.local.properties
 .env
+db.properties
+src/main/resources/db.properties
