@@ -146,11 +146,19 @@ public class ExpenseServlet extends HttpServlet {
                         userId, expenseId, recalc.getStatus()));
 
             } catch (Exception e) {
-                DBConnection.rollbackQuietly(conn);
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    LOGGER.log(Level.WARNING, "Failed to rollback transaction: " + ex.getMessage(), ex);
+                }
                 LOGGER.log(Level.SEVERE, "Transaction rolled back during addExpense: " + e.getMessage(), e);
                 throw e;
             } finally {
-                conn.setAutoCommit(originalAutoCommit);
+                try {
+                    conn.setAutoCommit(originalAutoCommit);
+                } catch (SQLException ex) {
+                    LOGGER.log(Level.WARNING, "Failed to restore autocommit: " + ex.getMessage(), ex);
+                }
             }
         } catch (SQLException e) {
             throw new RuntimeException("Database error executing expense transaction: " + e.getMessage(), e);

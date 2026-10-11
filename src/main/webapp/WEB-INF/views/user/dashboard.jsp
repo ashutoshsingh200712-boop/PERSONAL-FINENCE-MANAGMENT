@@ -25,7 +25,7 @@
                 <h3 class="fw-bold mb-1">Financial Dashboard</h3>
                 <p class="text-muted small mb-0">Overview for billing cycle <strong><c:out value="${selectedMonth}"/></strong> (Day ${dayOfMonth} of ${daysInMonth}, ${daysLeft} days remaining)</p>
             </div>
-            <form method="get" action="${pageContext.request.contextPath}/dashboard" class="d-flex align-items-center">
+            <form method="get" action="${pageContext.request.contextPath}/user/dashboard" class="d-flex align-items-center">
                 <label for="monthInput" class="form-label me-2 mb-0 small fw-semibold">Select Month:</label>
                 <input type="month" id="monthInput" name="month" class="form-control form-control-sm me-2" value="${selectedMonth}">
                 <button type="submit" class="btn btn-sm btn-outline-primary">View</button>
@@ -43,7 +43,7 @@
                         Notifications &amp; AI System Alerts
                     </h6>
                     <form method="post" action="${pageContext.request.contextPath}/notifications" class="mb-0">
-                        <input type="hidden" name="csrfToken" value="${csrfToken}">
+                        <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}">
                         <input type="hidden" name="action" value="markAllRead">
                         <button type="submit" class="btn btn-sm btn-outline-secondary py-0">Mark All as Read</button>
                     </form>
@@ -74,7 +74,7 @@
                                     <div class="text-muted small mt-1" style="font-size: 0.75rem;"><c:out value="${notif.createdAt}"/></div>
                                 </div>
                                 <form method="post" action="${pageContext.request.contextPath}/notifications" class="ms-2 mb-0">
-                                    <input type="hidden" name="csrfToken" value="${csrfToken}">
+                                    <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}">
                                     <input type="hidden" name="action" value="markRead">
                                     <input type="hidden" name="id" value="${notif.id}">
                                     <button type="submit" class="btn btn-sm btn-outline-success py-0 px-2" title="Mark as read">&check;</button>

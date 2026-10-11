@@ -50,11 +50,34 @@ public class DashboardServlet extends HttpServlet {
         Object roleObj = session.getAttribute("role");
         Role role = (roleObj instanceof Role r) ? r : Role.fromString(String.valueOf(roleObj));
 
-        if (role == Role.ADMIN) {
+        String servletPath = req.getServletPath();
+        String queryString = req.getQueryString();
+        String querySuffix = (queryString != null && !queryString.isEmpty()) ? "?" + queryString : "";
+
+        // /dashboard redirects by role
+        if ("/dashboard".equals(servletPath) || servletPath == null || servletPath.isEmpty() || "/".equals(servletPath)) {
+            if (role == Role.ADMIN) {
+                resp.sendRedirect(req.getContextPath() + "/admin/dashboard" + querySuffix);
+            } else if (role == Role.ADVISOR) {
+                resp.sendRedirect(req.getContextPath() + "/advisor/dashboard" + querySuffix);
+            } else {
+                resp.sendRedirect(req.getContextPath() + "/user/dashboard" + querySuffix);
+            }
+            return;
+        }
+
+        if ("/admin/dashboard".equals(servletPath)) {
             handleAdminDashboard(req, resp);
-        } else if (role == Role.ADVISOR) {
+        } else if ("/advisor/dashboard".equals(servletPath)) {
             handleAdvisorDashboard(req, resp, userId);
         } else {
+            if (role == Role.ADMIN) {
+                resp.sendRedirect(req.getContextPath() + "/admin/dashboard" + querySuffix);
+                return;
+            } else if (role == Role.ADVISOR) {
+                resp.sendRedirect(req.getContextPath() + "/advisor/dashboard" + querySuffix);
+                return;
+            }
             handleUserDashboard(req, resp, userId);
         }
     }

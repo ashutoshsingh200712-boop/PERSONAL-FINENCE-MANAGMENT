@@ -34,6 +34,7 @@ public class CsrfFilter implements Filter {
             sessionToken = SecurityUtil.generateCsrfToken();
             session.setAttribute(CSRF_SESSION_KEY, sessionToken);
         }
+        httpRequest.setAttribute(CSRF_SESSION_KEY, sessionToken);
 
         // On every POST request, validate the token
         if ("POST".equalsIgnoreCase(httpRequest.getMethod())) {
