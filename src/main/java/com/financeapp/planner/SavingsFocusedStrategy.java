@@ -106,4 +106,8 @@ public class SavingsFocusedStrategy implements AllocationStrategy {
     public Optional<String> getClampWarning() {
         return Optional.ofNullable(clampWarning);
     }
+
+    public String getWarning() {
+        return clampWarning;
+    }
 }

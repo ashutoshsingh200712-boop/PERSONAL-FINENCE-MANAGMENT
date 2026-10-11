@@ -34,6 +34,12 @@ public class PlanItem {
         setCreatedAt(createdAt);
     }
 
+    public PlanItem(Long id, Long planId, Long categoryId, String categoryName, BigDecimal allocatedAmount,
+                    BigDecimal weightPercentage, String notes, LocalDateTime createdAt) {
+        this(id, planId, categoryId, allocatedAmount, weightPercentage, notes, createdAt);
+        setCategoryName(categoryName);
+    }
+
     public Long getId() {
         return id;
     }

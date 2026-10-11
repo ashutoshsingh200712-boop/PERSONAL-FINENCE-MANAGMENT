@@ -180,4 +180,50 @@ class PlannerEngineTest {
         assertTrue(savingsStrategy.getClampWarning().get().contains("clamped to 40.00%"));
         assertEquals(new BigDecimal("400.00"), allocHigh.get("Savings"));
     }
+
+    @Test
+    @DisplayName("savings goal 2000, available 3000: share clamped to 40% and a warning is returned")
+    void testSavingsGoal2000Available3000ClampedTo40Percent() {
+        BigDecimal available = new BigDecimal("3000.00");
+        BigDecimal savingsGoal = new BigDecimal("2000.00");
+
+        Map<String, BigDecimal> allocations = savingsStrategy.allocate(available, savingsGoal);
+
+        // Clamped share is 40% of 3000 = 1200.00
+        assertEquals(new BigDecimal("1200.00"), allocations.get("Savings"));
+        assertTrue(savingsStrategy.isGoalClamped(), "Goal share must be clamped");
+        assertTrue(savingsStrategy.getClampWarning().isPresent(), "Warning must be present");
+        assertTrue(savingsStrategy.getClampWarning().get().contains("40.00%"), "Warning must state clamped to 40.00%");
+        assertNotNull(savingsStrategy.getWarning(), "getWarning string should not be null");
+
+        // Allocations must equal available exactly
+        BigDecimal total = allocations.values().stream().reduce(BigDecimal.ZERO, BigDecimal::add);
+        assertEquals(available, total);
+    }
+
+    @Test
+    @DisplayName("SurplusRule: fires when surplus >= 100, does not fire when surplus < 100")
+    void testSurplusRuleThreshold() {
+        SurplusRule surplusRule = new SurplusRule();
+
+        // 1. Surplus = 150 (>= 100) -> Fires
+        RecalculationResult resultWithSurplus150 = plannerService.recalculate("Food", new BigDecimal("1200.00"), new BigDecimal("250.00"), 10, 30);
+        assertEquals(PlanStatus.UNDER, resultWithSurplus150.getStatus());
+        assertEquals(new BigDecimal("150.00"), resultWithSurplus150.getSurplus());
+        var advice150 = surplusRule.evaluate(resultWithSurplus150);
+        assertTrue(advice150.isPresent(), "SurplusRule should fire when surplus >= 100");
+        assertTrue(advice150.get().contains("[SurplusRule]"));
+        assertTrue(advice150.get().contains("150.00"));
+
+        // 2. Surplus = 50 (< 100) -> Does NOT fire
+        // e.g. budget = 1200, day 10, expected = 400. Spent = 350 -> ratio = 350/400 = 0.875 (ON_TRACK).
+        // Let's create an UNDER scenario with surplus < 100:
+        // day 10, daysInMonth 30: initialDailyLimit = 300 / 30 = 10. expectedSpent = 100.
+        // spent = 50 -> ratio = 50 / 100 = 0.50 (UNDER). surplus = 100 - 50 = 50.00 (< 100).
+        RecalculationResult resultWithSurplus50 = plannerService.recalculate("Other", new BigDecimal("300.00"), new BigDecimal("50.00"), 10, 30);
+        assertEquals(PlanStatus.UNDER, resultWithSurplus50.getStatus());
+        assertEquals(new BigDecimal("50.00"), resultWithSurplus50.getSurplus());
+        var advice50 = surplusRule.evaluate(resultWithSurplus50);
+        assertTrue(advice50.isEmpty(), "SurplusRule should NOT fire when surplus < 100");
+    }
 }

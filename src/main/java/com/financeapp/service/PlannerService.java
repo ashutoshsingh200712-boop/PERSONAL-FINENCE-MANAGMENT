@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -62,6 +63,39 @@ public class PlannerService {
     }
 
     /**
+     * Reads category allocation weights from system_settings table via SettingsDAO.
+     * Reads the individual rows weight_Food, weight_Savings, weight_Emergency,
+     * weight_Entertainment, weight_Other stored as whole numbers (e.g. 40 = 40%)
+     * and divides them by 100. Ignores the planner_default_weights JSON row.
+     */
+    public Map<String, BigDecimal> loadWeightsFromSettings() {
+        Map<String, BigDecimal> weights = new LinkedHashMap<>();
+        weights.put("Food", loadSingleWeightSetting("weight_Food", "40"));
+        weights.put("Savings", loadSingleWeightSetting("weight_Savings", "20"));
+        weights.put("Emergency", loadSingleWeightSetting("weight_Emergency", "15"));
+        weights.put("Entertainment", loadSingleWeightSetting("weight_Entertainment", "10"));
+        weights.put("Other", loadSingleWeightSetting("weight_Other", "15"));
+        return weights;
+    }
+
+    private BigDecimal loadSingleWeightSetting(String key, String fallbackWholeNumber) {
+        String valStr = settingsDAO.get(key).orElse(fallbackWholeNumber);
+        try {
+            BigDecimal raw = new BigDecimal(valStr.trim());
+            return raw.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+        } catch (Exception e) {
+            return new BigDecimal(fallbackWholeNumber).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+        }
+    }
+
+    /**
+     * Constructs a DefaultStrategy using the weights loaded from system_settings.
+     */
+    public DefaultStrategy createDefaultStrategyFromSettings() {
+        return new DefaultStrategy(loadWeightsFromSettings());
+    }
+
+    /**
      * Calculates initial daily spending pace limit.
      */
     public BigDecimal calculateDailyLimit(BigDecimal monthlyAmount, int daysInMonth) {
@@ -107,7 +141,7 @@ public class PlannerService {
             ));
         }
 
-        AllocationStrategy activeStrategy = (strategy != null) ? strategy : new DefaultStrategy();
+        AllocationStrategy activeStrategy = (strategy != null) ? strategy : createDefaultStrategyFromSettings();
         Map<String, BigDecimal> allocations = activeStrategy.allocate(available, savingsGoal);
 
         SpendingPlan plan = new SpendingPlan();
@@ -204,6 +238,82 @@ public class PlannerService {
     }
 
     /**
+     * Recalculates plan status and adjusted daily limit for a user in the current month.
+     * Savings and Emergency are transfers, not daily spending, and are excluded from daily limits.
+     * Adjusted daily limit = max(budget - spent, 0) / daysLeft.
+     *
+     * @param conn   database connection
+     * @param userId user id
+     * @return recalculation result containing status and adjusted daily limit
+     */
+    public RecalculationResult recalculate(Connection conn, long userId) {
+        LocalDate today = LocalDate.now();
+        String currentMonth = YearMonth.from(today).toString();
+        return recalculate(conn, userId, currentMonth, today.getDayOfMonth(), today.lengthOfMonth());
+    }
+
+    /**
+     * Overload recalculating user plan status and adjusted daily limit for a specific month and date.
+     * Savings and Emergency are transfers, not daily spending, and are excluded from daily limits.
+     *
+     * @param conn        database connection
+     * @param userId      user id
+     * @param month       plan month (YYYY-MM)
+     * @param dayOfMonth  current day of month
+     * @param daysInMonth total days in month
+     * @return recalculation result containing status and adjusted daily limit
+     */
+    public RecalculationResult recalculate(Connection conn, long userId, String month, int dayOfMonth, int daysInMonth) {
+        Optional<SpendingPlan> planOpt = (conn != null)
+                ? spendingPlanDAO.findByUserAndMonth(conn, userId, month)
+                : spendingPlanDAO.findByUserAndMonth(userId, month);
+
+        BigDecimal dailySpendingBudget = BigDecimal.ZERO;
+        Set<String> transferCategories = Set.of("savings", "emergency");
+        Set<Long> transferCategoryIds = new HashSet<>();
+
+        if (planOpt.isPresent()) {
+            SpendingPlan plan = planOpt.get();
+            for (PlanItem item : plan.getItems()) {
+                String name = (item.getCategoryName() != null) ? item.getCategoryName().trim().toLowerCase() : "";
+                if (transferCategories.contains(name)) {
+                    if (item.getCategoryId() != null) {
+                        transferCategoryIds.add(item.getCategoryId());
+                    }
+                } else {
+                    dailySpendingBudget = dailySpendingBudget.add(item.getAllocatedAmount() != null ? item.getAllocatedAmount() : BigDecimal.ZERO);
+                }
+            }
+        }
+
+        List<Expense> expenses = (conn != null)
+                ? expenseDAO.findByMonthAndCategory(conn, userId, month, null, 10000, 0)
+                : expenseDAO.findByMonthAndCategory(userId, month, null, 10000, 0);
+
+        BigDecimal dailySpendingSpent = expenses.stream()
+                .filter(e -> {
+                    if (e.getCategoryId() != null && transferCategoryIds.contains(e.getCategoryId())) {
+                        return false;
+                    }
+                    String catName = (e.getCategoryName() != null) ? e.getCategoryName().trim().toLowerCase() : "";
+                    return !transferCategories.contains(catName);
+                })
+                .map(Expense::getAmount)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return recalculate("Daily Spending", dailySpendingBudget, dailySpendingSpent, dayOfMonth, daysInMonth);
+    }
+
+    public RecalculationResult recalculate(long userId) {
+        try (Connection conn = DBConnection.getConnection()) {
+            return recalculate(conn, userId);
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to recalculate user plan metrics: " + e.getMessage(), e);
+        }
+    }
+
+    /**
      * Pure recalculation calculation given category metrics and days.
      */
     public RecalculationResult recalculate(String categoryName, BigDecimal budget, BigDecimal spent,
@@ -232,7 +342,9 @@ public class PlannerService {
         if (budgetOpt.isPresent()) {
             budgetLimit = budgetOpt.get().getBudgetLimit();
         } else {
-            Optional<SpendingPlan> planOpt = spendingPlanDAO.findByUserAndMonth(userId, month);
+            Optional<SpendingPlan> planOpt = (conn != null)
+                    ? spendingPlanDAO.findByUserAndMonth(conn, userId, month)
+                    : spendingPlanDAO.findByUserAndMonth(userId, month);
             if (planOpt.isPresent()) {
                 budgetLimit = planOpt.get().getItems().stream()
                         .filter(item -> Objects.equals(item.getCategoryId(), categoryId))
@@ -243,7 +355,9 @@ public class PlannerService {
         }
 
         // 2. Query total spent so far in this month and category
-        List<Expense> expenses = expenseDAO.findByMonthAndCategory(userId, month, categoryId, 10000, 0);
+        List<Expense> expenses = (conn != null)
+                ? expenseDAO.findByMonthAndCategory(conn, userId, month, categoryId, 10000, 0)
+                : expenseDAO.findByMonthAndCategory(userId, month, categoryId, 10000, 0);
         BigDecimal totalSpent = expenses.stream()
                 .map(Expense::getAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);

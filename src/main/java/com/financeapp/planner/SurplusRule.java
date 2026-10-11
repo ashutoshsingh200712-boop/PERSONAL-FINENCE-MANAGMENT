@@ -15,6 +15,10 @@ public class SurplusRule implements AdviceRule {
             return Optional.empty();
         }
 
+        if (result.getSurplus() == null || result.getSurplus().compareTo(new BigDecimal("100.00")) < 0) {
+            return Optional.empty();
+        }
+
         BigDecimal percentage = result.getRatio().multiply(BigDecimal.valueOf(100)).setScale(1, RoundingMode.HALF_UP);
         String text = String.format(
                 "[SurplusRule] Spending for %s is at %s%% of expected pace (spent $%s vs expected $%s). " +

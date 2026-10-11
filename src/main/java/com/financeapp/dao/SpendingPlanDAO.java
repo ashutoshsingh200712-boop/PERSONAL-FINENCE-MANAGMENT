@@ -16,6 +16,7 @@ public interface SpendingPlanDAO {
 
     Optional<SpendingPlan> findById(long id);
     Optional<SpendingPlan> findByUserAndMonth(long userId, String month);
+    Optional<SpendingPlan> findByUserAndMonth(Connection conn, long userId, String month);
     List<SpendingPlan> findByUserId(long userId);
     List<SpendingPlan> findAllActive();
     List<SpendingPlan> findAllActive(Connection conn);

@@ -161,8 +161,16 @@ public class JdbcSpendingPlanDAO implements SpendingPlanDAO {
 
     @Override
     public Optional<SpendingPlan> findByUserAndMonth(long userId, String month) {
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(SQL_FIND_BY_USER_MONTH)) {
+        try (Connection conn = DBConnection.getConnection()) {
+            return findByUserAndMonth(conn, userId, month);
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to open connection to find spending plan for month: " + month, e);
+        }
+    }
+
+    @Override
+    public Optional<SpendingPlan> findByUserAndMonth(Connection conn, long userId, String month) {
+        try (PreparedStatement stmt = conn.prepareStatement(SQL_FIND_BY_USER_MONTH)) {
             stmt.setLong(1, userId);
             stmt.setString(2, month);
             try (ResultSet rs = stmt.executeQuery()) {
