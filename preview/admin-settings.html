@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Settings &amp; AI Allocation Weights - Admin Console</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="app-wrapper">
+        <!-- Sidebar Backdrop for Mobile -->
+        <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+        <!-- Fixed Left Sidebar -->
+        <aside class="app-sidebar" id="appSidebar">
+            <a href="index.html" class="sidebar-brand">
+                <span class="brand-icon" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">🛡️</span>
+                <span>Admin Console</span>
+            </a>
+
+            <div class="sidebar-menu">
+                <div class="sidebar-heading">Administration</div>
+                <a href="admin-users.html" class="sidebar-nav-item">
+                    <span class="nav-icon">👥</span>
+                    <span>User Accounts</span>
+                </a>
+                <a href="admin-settings.html" class="sidebar-nav-item active">
+                    <span class="nav-icon">⚙️</span>
+                    <span>System Settings</span>
+                </a>
+
+                <div class="sidebar-heading mt-3">Prototypes Switcher</div>
+                <a href="user-dashboard.html" class="sidebar-nav-item">
+                    <span class="nav-icon">👤</span>
+                    <span>User Experience</span>
+                </a>
+                <a href="advisor-dashboard.html" class="sidebar-nav-item">
+                    <span class="nav-icon">💼</span>
+                    <span>Advisor View</span>
+                </a>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <div class="user-avatar" style="background: linear-gradient(135deg, #ef4444, #b91c1c);">AD</div>
+                    <div class="user-info">
+                        <div class="user-name">SysAdmin</div>
+                        <span class="badge badge-role-admin user-role-badge">ADMIN</span>
+                    </div>
+                    <a href="login.html" class="ms-auto text-muted text-decoration-none" title="Log Out">⎋</a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="app-main">
+            <!-- Topbar -->
+            <header class="app-topbar">
+                <div class="topbar-left">
+                    <button class="sidebar-toggle-btn" id="sidebarToggleBtn" aria-label="Toggle Navigation">☰</button>
+                    <h1 class="page-title">Global System Settings</h1>
+                </div>
+
+                <div class="topbar-right">
+                    <span class="badge bg-success-subtle text-success border">MySQL 8 Settings Table</span>
+                </div>
+            </header>
+
+            <!-- Page Body Content -->
+            <main class="app-content">
+                <div class="row g-4">
+                    <!-- Left: Category Allocation Weights (with Live 100% check) -->
+                    <div class="col-lg-7">
+                        <div class="card card-fintech h-100">
+                            <div class="card-header-clean">
+                                <h6><span>⚖️</span> Default AI Smart Planner Category Allocations</h6>
+                                <span class="badge bg-primary" id="weightSumDisplay">100%</span>
+                            </div>
+                            <div class="card-body-clean">
+                                <p class="text-muted small mb-3">
+                                    When regular clients generate an initial AI Smart Spending Plan, their disposable envelope is divided proportionally using these baseline percentage weights.
+                                </p>
+
+                                <!-- Live 100% Progress Bar -->
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between small text-muted mb-1">
+                                        <span class="fw-semibold">Total Allocation Ratio</span>
+                                        <span class="fw-bold" id="weightRatioText">100% required</span>
+                                    </div>
+                                    <div class="progress" style="height: 10px;">
+                                        <div class="progress-bar bg-success" id="weightSumProgress" role="progressbar" style="width: 100%;"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Validation Alert Display -->
+                                <div id="weightValidationAlert" class="alert alert-success d-flex align-items-center py-2 px-3 small mb-4">
+                                    <strong>✓ Valid:</strong> Category allocations equal exactly 100%.
+                                </div>
+
+                                <form id="settingsForm" data-preview-handler="true" data-preview-action="System Settings Updated">
+                                    <input type="hidden" name="csrfToken" value="preview-token">
+                                    
+                                    <div class="row g-3 mb-4">
+                                        <div class="col-sm-6">
+                                            <label class="form-label-clean">Food &amp; Groceries Weight (%)</label>
+                                            <div class="input-group input-group-sm">
+                                                <input type="number" step="1" min="0" max="100" class="form-control weight-input" id="weightFood" name="weight_Food" value="40" required>
+                                                <span class="input-group-text">%</span>
+                                            </div>
+                                            <div class="form-text small">Default: 40% (Rs. 1,200 of Rs. 3,000)</div>
+                                        </div>
+
+                                        <div class="col-sm-6">
+                                            <label class="form-label-clean">Savings &amp; Wealth Weight (%)</label>
+                                            <div class="input-group input-group-sm">
+                                                <input type="number" step="1" min="0" max="100" class="form-control weight-input" id="weightSavings" name="weight_Savings" value="20" required>
+                                                <span class="input-group-text">%</span>
+                                            </div>
+                                            <div class="form-text small">Default: 20% (Rs. 600 of Rs. 3,000)</div>
+                                        </div>
+
+                                        <div class="col-sm-6">
+                                            <label class="form-label-clean">Emergency Contingency Weight (%)</label>
+                                            <div class="input-group input-group-sm">
+                                                <input type="number" step="1" min="0" max="100" class="form-control weight-input" id="weightEmergency" name="weight_Emergency" value="15" required>
+                                                <span class="input-group-text">%</span>
+                                            </div>
+                                            <div class="form-text small">Default: 15% (Rs. 450 of Rs. 3,000)</div>
+                                        </div>
+
+                                        <div class="col-sm-6">
+                                            <label class="form-label-clean">Entertainment &amp; Leisure Weight (%)</label>
+                                            <div class="input-group input-group-sm">
+                                                <input type="number" step="1" min="0" max="100" class="form-control weight-input" id="weightEntertainment" name="weight_Entertainment" value="10" required>
+                                                <span class="input-group-text">%</span>
+                                            </div>
+                                            <div class="form-text small">Default: 10% (Rs. 300 of Rs. 3,000)</div>
+                                        </div>
+
+                                        <div class="col-sm-6">
+                                            <label class="form-label-clean">Other Discretionary Weight (%)</label>
+                                            <div class="input-group input-group-sm">
+                                                <input type="number" step="1" min="0" max="100" class="form-control weight-input" id="weightOther" name="weight_Other" value="15" required>
+                                                <span class="input-group-text">%</span>
+                                            </div>
+                                            <div class="form-text small">Default: 15% (Rs. 450 of Rs. 3,000)</div>
+                                        </div>
+                                    </div>
+
+                                    <hr>
+
+                                    <!-- Right/Bottom: Thresholds and Lockouts -->
+                                    <h6 class="fw-bold text-dark mb-3">🛡️ Security Lockout &amp; Threshold Configuration</h6>
+                                    <div class="row g-3">
+                                        <div class="col-sm-6">
+                                            <label class="form-label-clean">Max Failed Login Attempts</label>
+                                            <input type="number" step="1" min="1" class="form-control form-control-sm" name="max_failed_logins" value="5" required>
+                                            <div class="form-text small">Key: <code>max_failed_logins</code> (Default: 5)</div>
+                                        </div>
+
+                                        <div class="col-sm-6">
+                                            <label class="form-label-clean">Lockout Duration (Minutes)</label>
+                                            <input type="number" step="1" min="1" class="form-control form-control-sm" name="lockout_duration_minutes" value="15" required>
+                                            <div class="form-text small">Key: <code>lockout_duration_minutes</code> (Default: 15m)</div>
+                                        </div>
+
+                                        <div class="col-sm-6">
+                                            <label class="form-label-clean">Budget Alert Trigger Threshold (%)</label>
+                                            <div class="input-group input-group-sm">
+                                                <input type="number" step="0.1" min="1" max="100" class="form-control form-control-sm" name="default_alert_threshold" value="80.0" required>
+                                                <span class="input-group-text">%</span>
+                                            </div>
+                                            <div class="form-text small">Trigger warning notification when category hits 80%</div>
+                                        </div>
+
+                                        <div class="col-sm-6">
+                                            <label class="form-label-clean">Session Timeout (Minutes)</label>
+                                            <input type="number" step="1" min="5" class="form-control form-control-sm" name="session_timeout_minutes" value="30" required>
+                                            <div class="form-text small">web.xml HTTP session expiry</div>
+                                        </div>
+
+                                        <div class="col-12 mt-4 text-end">
+                                            <button type="submit" id="saveSettingsBtn" class="btn btn-indigo px-4">
+                                                Save System Configurations
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: System Diagnostic Information -->
+                    <div class="col-lg-5">
+                        <div class="card card-fintech mb-4">
+                            <div class="card-header-clean">
+                                <h6><span>📋</span> Active Configuration Snapshot</h6>
+                            </div>
+                            <div class="card-body-clean small">
+                                <ul class="list-group list-group-flush border rounded mb-3">
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span class="text-muted">Database Engine:</span>
+                                        <strong>MySQL 8.0 InnoDB</strong>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span class="text-muted">Password Security:</span>
+                                        <strong>jBCrypt (Salt Cost 10)</strong>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span class="text-muted">CSRF Protection:</span>
+                                        <strong class="text-success">Enabled (Session-Based)</strong>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span class="text-muted">Monetary Precision:</span>
+                                        <strong>DECIMAL(12,2) / HALF_UP</strong>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between">
+                                        <span class="text-muted">Multithreading Workers:</span>
+                                        <strong>2 Background Tasks (60s)</strong>
+                                    </li>
+                                </ul>
+
+                                <div class="p-3 bg-light rounded border text-muted">
+                                    <strong>💡 Admin Note:</strong> Changing weights affects newly generated AI Smart Spending plans. Existing plans retain their historical allocation records to preserve accounting integrity.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- App Footer -->
+            <footer class="app-footer">
+                Personal Finance Management Platform &copy; 2026 • Built with Jakarta Servlet 6.0 + JSP 3.1
+            </footer>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container-custom"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/charts.js"></script>
+</body>
+</html>

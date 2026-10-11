@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Advisor Portfolio - Personal Finance Management Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+</head>
+<body>
+    <div class="app-wrapper">
+        <!-- Sidebar Backdrop for Mobile -->
+        <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+        <!-- Fixed Left Sidebar -->
+        <aside class="app-sidebar" id="appSidebar">
+            <a href="index.html" class="sidebar-brand">
+                <span class="brand-icon" style="background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);">💼</span>
+                <span>Advisor Portal</span>
+            </a>
+
+            <div class="sidebar-menu">
+                <div class="sidebar-heading">Client Management</div>
+                <a href="advisor-dashboard.html" class="sidebar-nav-item active">
+                    <span class="nav-icon">👥</span>
+                    <span>Client Portfolio</span>
+                </a>
+                <a href="#advisorClientProgressChart" class="sidebar-nav-item">
+                    <span class="nav-icon">📊</span>
+                    <span>Pacing Analytics</span>
+                </a>
+
+                <div class="sidebar-heading mt-3">Prototypes Switcher</div>
+                <a href="user-dashboard.html" class="sidebar-nav-item">
+                    <span class="nav-icon">👤</span>
+                    <span>User Experience</span>
+                </a>
+                <a href="admin-users.html" class="sidebar-nav-item">
+                    <span class="nav-icon">🛡️</span>
+                    <span>Admin Console</span>
+                </a>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <div class="user-avatar" style="background: linear-gradient(135deg, #0d9488, #14b8a6);">SA</div>
+                    <div class="user-info">
+                        <div class="user-name">Sarah Jenkins</div>
+                        <span class="badge badge-role-advisor user-role-badge">ADVISOR</span>
+                    </div>
+                    <a href="login.html" class="ms-auto text-muted text-decoration-none" title="Log Out">⎋</a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="app-main">
+            <!-- Topbar -->
+            <header class="app-topbar">
+                <div class="topbar-left">
+                    <button class="sidebar-toggle-btn" id="sidebarToggleBtn" aria-label="Toggle Navigation">☰</button>
+                    <h1 class="page-title">Assigned Client Accounts</h1>
+                </div>
+
+                <div class="topbar-right">
+                    <span class="badge bg-light text-dark border">4 Clients Supervised</span>
+                    <button class="btn btn-teal btn-sm" onclick="showToast('Portfolio Sync', 'Client plan trajectories synchronized with live database records!')">
+                        🔄 Refresh Trajectories
+                    </button>
+                </div>
+            </header>
+
+            <!-- Page Body Content -->
+            <main class="app-content">
+                <!-- Advisor Metric Cards -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="card card-fintech metric-card">
+                            <div class="metric-header">
+                                <span class="metric-title">Active Supervised Clients</span>
+                                <span class="metric-icon-pill" style="background: #e0f2fe; color: #0284c7;">👥</span>
+                            </div>
+                            <div class="metric-value">4 Clients</div>
+                            <div class="metric-sub"><span class="text-muted">100% with generated plans</span></div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card card-fintech metric-card">
+                            <div class="metric-header">
+                                <span class="metric-title">Pacing Sustainable</span>
+                                <span class="metric-icon-pill" style="background: #dcfce7; color: #16a34a;">✓</span>
+                            </div>
+                            <div class="metric-value text-success">3 Clients</div>
+                            <div class="metric-sub"><span class="badge badge-status status-ontrack">ON_TRACK or UNDER</span></div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card card-fintech metric-card">
+                            <div class="metric-header">
+                                <span class="metric-title">Over-Pacing Risk</span>
+                                <span class="metric-icon-pill" style="background: #fee2e2; color: #dc2626;">⚠️</span>
+                            </div>
+                            <div class="metric-value text-danger">1 Client</div>
+                            <div class="metric-sub"><span class="badge badge-status status-over">Action Required</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Advisor Progress Bar Chart (Chart.js) -->
+                <div class="card card-fintech mb-4">
+                    <div class="card-header-clean">
+                        <h6><span>📊</span> Client Budget Consumption Trajectory (% Used So Far)</h6>
+                        <span class="small text-muted">Benchmark: Expected ≤ 40% at Day 12 of 30</span>
+                    </div>
+                    <div class="card-body-clean p-3">
+                        <div style="position: relative; height: 220px; width: 100%;">
+                            <canvas id="advisorClientProgressChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Assigned Users Table -->
+                <div class="card card-fintech mb-4">
+                    <div class="card-header-clean">
+                        <h6><span>📋</span> Client Accounts Portfolio</h6>
+                        <span class="small text-muted">Read-Only Advisory Access</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-fintech">
+                            <thead>
+                                <tr>
+                                    <th>Client ID</th>
+                                    <th>Client Name</th>
+                                    <th>Email</th>
+                                    <th>Disposable Envelope</th>
+                                    <th>Current Plan Status</th>
+                                    <th>Envelopes</th>
+                                    <th class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="text-muted">#3</td>
+                                    <td class="fw-bold text-dark">John Doe</td>
+                                    <td>john@example.com</td>
+                                    <td class="fw-semibold text-primary currency-amount">Rs. 3,000.00</td>
+                                    <td><span class="badge badge-status status-ontrack">ON_TRACK</span></td>
+                                    <td><span class="badge bg-light text-dark border">5 Envelopes</span></td>
+                                    <td class="text-end">
+                                        <button class="btn btn-sm btn-outline-primary py-0 px-2" data-bs-toggle="modal" data-bs-target="#clientPlanModal">
+                                            View Plan &amp; Advice →
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">#4</td>
+                                    <td class="fw-bold text-dark">Jane Smith</td>
+                                    <td>jane@example.com</td>
+                                    <td class="fw-semibold text-primary currency-amount">Rs. 4,200.00</td>
+                                    <td><span class="badge badge-status status-under">UNDER (Surplus)</span></td>
+                                    <td><span class="badge bg-light text-dark border">5 Envelopes</span></td>
+                                    <td class="text-end">
+                                        <button class="btn btn-sm btn-outline-primary py-0 px-2" data-bs-toggle="modal" data-bs-target="#clientPlanModal">
+                                            View Plan &amp; Advice →
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">#7</td>
+                                    <td class="fw-bold text-dark">Rahul Verma</td>
+                                    <td>rahul@example.com</td>
+                                    <td class="fw-semibold text-primary currency-amount">Rs. 2,100.00</td>
+                                    <td><span class="badge badge-status status-over">OVER (High Risk)</span></td>
+                                    <td><span class="badge bg-light text-dark border">4 Envelopes</span></td>
+                                    <td class="text-end">
+                                        <button class="btn btn-sm btn-outline-danger py-0 px-2" data-bs-toggle="modal" data-bs-target="#clientPlanModal">
+                                            Send Warning →
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">#8</td>
+                                    <td class="fw-bold text-dark">Priya Patel</td>
+                                    <td>priya@example.com</td>
+                                    <td class="fw-semibold text-primary currency-amount">Rs. 3,800.00</td>
+                                    <td><span class="badge badge-status status-ontrack">ON_TRACK</span></td>
+                                    <td><span class="badge bg-light text-dark border">5 Envelopes</span></td>
+                                    <td class="text-end">
+                                        <button class="btn btn-sm btn-outline-primary py-0 px-2" data-bs-toggle="modal" data-bs-target="#clientPlanModal">
+                                            View Plan &amp; Advice →
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+
+            <!-- App Footer -->
+            <footer class="app-footer">
+                Personal Finance Management Platform &copy; 2026 • Built with Jakarta Servlet 6.0 + JSP 3.1
+            </footer>
+        </div>
+    </div>
+
+    <!-- Modal: Client Plan View -->
+    <div class="modal fade" id="clientPlanModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div>
+                        <h6 class="modal-title fw-bold">Client Spending Plan: John Doe (#3)</h6>
+                        <small class="text-muted">Cycle: October 2026 (Read-Only Advisory Inspection)</small>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body small">
+                    <!-- Client Financial Overview -->
+                    <div class="row g-2 p-3 bg-light rounded border mb-3">
+                        <div class="col-sm-4">
+                            <span class="text-muted d-block">Monthly Total Income:</span>
+                            <strong class="text-success currency-amount">Rs. 5,000.00</strong>
+                        </div>
+                        <div class="col-sm-4">
+                            <span class="text-muted d-block">Fixed Living Expenses:</span>
+                            <strong class="text-danger currency-amount">Rs. 2,000.00</strong>
+                        </div>
+                        <div class="col-sm-4">
+                            <span class="text-muted d-block">Disposable Envelope:</span>
+                            <strong class="text-primary currency-amount">Rs. 3,000.00</strong>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold mb-2">Allocated AI Category Envelopes:</h6>
+                    <table class="table table-sm table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Category</th>
+                                <th>Share %</th>
+                                <th>Monthly Allocation</th>
+                                <th>Spent So Far</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Food</td>
+                                <td>40%</td>
+                                <td class="currency-amount">Rs. 1,200.00</td>
+                                <td class="currency-amount text-danger">Rs. 680.00</td>
+                                <td><span class="badge badge-status status-over">OVER</span></td>
+                            </tr>
+                            <tr>
+                                <td>Savings</td>
+                                <td>20%</td>
+                                <td class="currency-amount">Rs. 600.00</td>
+                                <td class="currency-amount">Rs. 600.00</td>
+                                <td><span class="badge badge-status status-under">UNDER</span></td>
+                            </tr>
+                            <tr>
+                                <td>Emergency</td>
+                                <td>15%</td>
+                                <td class="currency-amount">Rs. 450.00</td>
+                                <td class="currency-amount">Rs. 0.00</td>
+                                <td><span class="badge badge-status status-under">UNDER</span></td>
+                            </tr>
+                            <tr>
+                                <td>Entertainment</td>
+                                <td>10%</td>
+                                <td class="currency-amount">Rs. 300.00</td>
+                                <td class="currency-amount text-success">Rs. 40.00</td>
+                                <td><span class="badge badge-status status-under">UNDER</span></td>
+                            </tr>
+                            <tr>
+                                <td>Other</td>
+                                <td>15%</td>
+                                <td class="currency-amount">Rs. 450.00</td>
+                                <td class="currency-amount">Rs. 110.00</td>
+                                <td><span class="badge badge-status status-ontrack">ON_TRACK</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-teal btn-sm" onclick="showToast('Advisory Note Sent', 'Dispatched financial recommendation to client notification center!')">
+                        Send Advisory Recommendation
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container-custom"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/charts.js"></script>
+</body>
+</html>

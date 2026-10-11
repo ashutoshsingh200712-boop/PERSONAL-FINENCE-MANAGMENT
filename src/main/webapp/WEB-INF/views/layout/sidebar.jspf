@@ -1,0 +1,81 @@
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<aside class="app-sidebar" id="appSidebar">
+    <a href="${pageContext.request.contextPath}/dashboard" class="sidebar-brand">
+        <span class="brand-icon">◆</span>
+        <span>FinApp AI</span>
+    </a>
+
+    <div class="sidebar-menu">
+        <c:choose>
+            <%-- ADMIN MENU --%>
+            <c:when test="${sessionScope.role == 'ADMIN'}">
+                <div class="sidebar-heading">Administration</div>
+                <a href="${pageContext.request.contextPath}/admin/dashboard#users" class="sidebar-nav-item ${activeNav == 'users' ? 'active' : ''}">
+                    <span class="nav-icon">👥</span>
+                    <span>User Accounts</span>
+                </a>
+                <a href="${pageContext.request.contextPath}/admin/dashboard#settings" class="sidebar-nav-item ${activeNav == 'settings' ? 'active' : ''}">
+                    <span class="nav-icon">⚙️</span>
+                    <span>System Settings</span>
+                </a>
+                <a href="${pageContext.request.contextPath}/admin/dashboard#audit" class="sidebar-nav-item ${activeNav == 'audit' ? 'active' : ''}">
+                    <span class="nav-icon">🛡️</span>
+                    <span>Audit Trail</span>
+                </a>
+            </c:when>
+
+            <%-- ADVISOR MENU --%>
+            <c:when test="${sessionScope.role == 'ADVISOR'}">
+                <div class="sidebar-heading">Advisory Portal</div>
+                <a href="${pageContext.request.contextPath}/advisor/dashboard" class="sidebar-nav-item ${activeNav == 'portfolio' ? 'active' : 'active'}">
+                    <span class="nav-icon">👥</span>
+                    <span>Client Portfolio</span>
+                </a>
+            </c:when>
+
+            <%-- REGULAR USER MENU --%>
+            <c:otherwise>
+                <div class="sidebar-heading">Personal Wealth</div>
+                <a href="${pageContext.request.contextPath}/user/dashboard" class="sidebar-nav-item ${empty activeNav || activeNav == 'dashboard' ? 'active' : ''}">
+                    <span class="nav-icon">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="${pageContext.request.contextPath}/user/dashboard#planner" class="sidebar-nav-item ${activeNav == 'planner' ? 'active' : ''}">
+                    <span class="nav-icon">🎯</span>
+                    <span>AI Planner</span>
+                </a>
+                <a href="${pageContext.request.contextPath}/user/dashboard#expenses" class="sidebar-nav-item ${activeNav == 'expenses' ? 'active' : ''}">
+                    <span class="nav-icon">💳</span>
+                    <span>Expenses</span>
+                </a>
+                <a href="${pageContext.request.contextPath}/user/dashboard#advice" class="sidebar-nav-item ${activeNav == 'advice' ? 'active' : ''}">
+                    <span class="nav-icon">💡</span>
+                    <span>Smart Advice</span>
+                </a>
+            </c:otherwise>
+        </c:choose>
+    </div>
+
+    <!-- User Profile Bar in Sidebar Footer -->
+    <div class="sidebar-footer">
+        <div class="sidebar-user">
+            <div class="user-avatar">
+                <c:choose>
+                    <c:when test="${not empty sessionScope.userName}">
+                        <c:out value="${sessionScope.userName.substring(0, 1).toUpperCase()}"/>
+                    </c:when>
+                    <c:otherwise>U</c:otherwise>
+                </c:choose>
+            </div>
+            <div class="user-info">
+                <div class="user-name">
+                    <c:out value="${empty sessionScope.userName ? 'Authenticated User' : sessionScope.userName}"/>
+                </div>
+                <span class="badge ${sessionScope.role == 'ADMIN' ? 'badge-role-admin' : (sessionScope.role == 'ADVISOR' ? 'badge-role-advisor' : 'badge-role-user')} user-role-badge">
+                    <c:out value="${empty sessionScope.role ? 'USER' : sessionScope.role}"/>
+                </span>
+            </div>
+        </div>
+    </div>
+</aside>
