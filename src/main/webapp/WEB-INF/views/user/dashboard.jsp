@@ -215,9 +215,21 @@
         <!-- Envelopes Breakdown Table -->
         <c:if test="${not empty plan}">
             <div class="card card-fintech mb-4">
-                <div class="card-header-clean">
-                    <h6><span>📦</span> Category Allocation Envelopes</h6>
-                    <span class="small text-muted">Automatic Rounding Protection</span>
+                <div class="card-header-clean d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-0"><span>📦</span> Category Allocation Envelopes</h6>
+                        <span class="small text-muted">Automatic Rounding Protection</span>
+                    </div>
+                    <form method="post" action="${pageContext.request.contextPath}/budgets/accept-plan" class="d-inline">
+                        <input type="hidden" name="csrfToken" value="${csrfToken}">
+                        <input type="hidden" name="planId" value="${plan.id}">
+                        <input type="hidden" name="month" value="${selectedMonth}">
+                        <input type="hidden" name="redirect" value="dashboard">
+                        <button type="submit" class="btn btn-success btn-sm d-flex align-items-center gap-1 shadow-sm">
+                            <span>✓</span>
+                            <span>Accept Plan as Budget (AI_PLAN)</span>
+                        </button>
+                    </form>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-fintech">
@@ -278,11 +290,139 @@
     </div>
 </div>
 
-<!-- Section 4: Explainable AI Advice Cards -->
+<!-- Category Budgets & Utilisation Section -->
+<div class="card card-fintech mb-4" id="budgets">
+    <div class="card-header-clean d-flex justify-content-between align-items-center">
+        <div>
+            <h6 class="mb-0"><span>💼</span> Active Category Budgets &amp; Utilisation (<c:out value="${selectedMonth}"/>)</h6>
+            <span class="small text-muted">Utilisation = (Spent / Budget) &times; 100 &bull; <span class="badge bg-info text-dark">70% Info</span> <span class="badge bg-warning text-dark">90% Warning</span> <span class="badge bg-danger">100%+ Critical</span></span>
+        </div>
+        <a href="${pageContext.request.contextPath}/budgets?month=${selectedMonth}" class="btn btn-outline-primary btn-sm">Manage Budgets &rarr;</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-fintech align-middle mb-0">
+            <thead>
+                <tr>
+                    <th>Category</th>
+                    <th>Source</th>
+                    <th>Budget Limit</th>
+                    <th>Spent So Far</th>
+                    <th style="width: 220px;">Utilisation</th>
+                    <th class="text-end">Level</th>
+                </tr>
+            </thead>
+            <tbody>
+                <c:choose>
+                    <c:when test="${empty budgetDetails}">
+                        <tr>
+                            <td colspan="6" class="text-center py-3 text-muted small">
+                                No category budgets configured for <c:out value="${selectedMonth}"/>.
+                                <c:if test="${not empty plan}">
+                                    Click <strong>Accept Plan as Budget (AI_PLAN)</strong> above to copy envelopes to budgets!
+                                </c:if>
+                            </td>
+                        </tr>
+                    </c:when>
+                    <c:otherwise>
+                        <c:forEach var="det" items="${budgetDetails}">
+                            <c:set var="b" value="${det.budget}"/>
+                            <c:set var="u" value="${det.utilisation}"/>
+                            <tr>
+                                <td class="fw-bold"><c:out value="${b.categoryName}"/></td>
+                                <td>
+                                    <span class="badge ${b.source == 'AI_PLAN' ? 'bg-primary' : 'bg-secondary'}">
+                                        <c:out value="${b.source}"/>
+                                    </span>
+                                </td>
+                                <td class="fw-semibold currency-amount">Rs. <fmt:formatNumber value="${b.budgetLimit}" pattern="#,##0.00"/></td>
+                                <td class="currency-amount">Rs. <fmt:formatNumber value="${det.spent}" pattern="#,##0.00"/></td>
+                                <td>
+                                    <div class="d-flex justify-content-between small text-muted mb-1">
+                                        <span><c:out value="${u.percentage}"/>%</span>
+                                    </div>
+                                    <div class="progress" style="height: 6px;">
+                                        <div class="progress-bar ${u.critical ? 'bg-danger' : (u.warning ? 'bg-warning' : (u.info ? 'bg-info' : 'bg-success'))}"
+                                             style="width: ${u.percentage > 100 ? 100 : u.percentage}%;"></div>
+                                    </div>
+                                </td>
+                                <td class="text-end">
+                                    <c:choose>
+                                        <c:when test="${u.critical}">
+                                            <span class="badge bg-danger">Critical (&ge;100%)</span>
+                                        </c:when>
+                                        <c:when test="${u.warning}">
+                                            <span class="badge bg-warning text-dark">Warning (&ge;90%)</span>
+                                        </c:when>
+                                        <c:when test="${u.info}">
+                                            <span class="badge bg-info text-dark">Info (&ge;70%)</span>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <span class="badge bg-success">Normal</span>
+                                        </c:otherwise>
+                                    </c:choose>
+                                </td>
+                            </tr>
+                        </c:forEach>
+                    </c:otherwise>
+                </c:choose>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Savings Goals Feasibility Section -->
+<div class="card card-fintech mb-4" id="goals">
+    <div class="card-header-clean d-flex justify-content-between align-items-center">
+        <div>
+            <h6 class="mb-0"><span>🏆</span> Savings Goals &amp; Feasibility</h6>
+            <span class="small text-muted">Feasibility = (Target - Current) / Months Remaining vs. Average Monthly Surplus</span>
+        </div>
+        <a href="${pageContext.request.contextPath}/goals" class="btn btn-outline-primary btn-sm">+ Manage Goals</a>
+    </div>
+    <div class="card-body-clean p-3">
+        <c:choose>
+            <c:when test="${empty goalResults}">
+                <div class="text-center py-3 text-muted small">
+                    No savings goals created yet. <a href="${pageContext.request.contextPath}/goals" class="text-primary fw-semibold">Create a goal</a> to track monthly feasibility.
+                </div>
+            </c:when>
+            <c:otherwise>
+                <div class="row g-3">
+                    <c:forEach var="res" items="${goalResults}">
+                        <c:set var="g" value="${res.goal}"/>
+                        <div class="col-md-6">
+                            <div class="border rounded p-3 bg-white shadow-sm h-100 d-flex flex-column justify-content-between">
+                                <div>
+                                    <div class="d-flex justify-content-between align-items-start mb-1">
+                                        <strong class="text-dark"><c:out value="${g.name}"/></strong>
+                                        <span class="badge bg-${res.status.cssClass}"><c:out value="${res.status.label}"/></span>
+                                    </div>
+                                    <div class="text-muted small mb-2">Target Date: <c:out value="${g.targetDate}"/> (<c:out value="${res.monthsRemaining}"/> month(s) left)</div>
+                                    <div class="d-flex justify-content-between small text-secondary mb-1">
+                                        <span>Saved: Rs. <fmt:formatNumber value="${g.currentAmount}" pattern="#,##0.00"/></span>
+                                        <span>Target: Rs. <fmt:formatNumber value="${g.targetAmount}" pattern="#,##0.00"/></span>
+                                    </div>
+                                    <div class="progress mb-2" style="height: 6px;">
+                                        <div class="progress-bar bg-primary" style="width: ${g.progressPercentage > 100 ? 100 : g.progressPercentage}%;"></div>
+                                    </div>
+                                    <div class="alert alert-${res.status.cssClass} small py-1 px-2 mb-0">
+                                        <c:out value="${res.explanation}"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </c:forEach>
+                </div>
+            </c:otherwise>
+        </c:choose>
+    </div>
+</div>
+
+<!-- Section 4: Explainable AI Advice & Advisor Guidance -->
 <div class="mb-4" id="advice">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="fw-bold mb-0">💡 Explainable AI Advice &amp; Trajectory Guidance</h5>
-        <span class="small text-muted">Deterministic Rules Evaluation</span>
+        <h5 class="fw-bold mb-0">💡 Explainable AI Advice &amp; Advisor Guidance</h5>
+        <span class="small text-muted">Deterministic Rules &amp; Supervised Guidance</span>
     </div>
 
     <c:choose>
@@ -321,13 +461,75 @@
             </c:if>
         </c:otherwise>
     </c:choose>
+
+    <!-- Advisor Comments & Personalized Guidance -->
+    <c:if test="${not empty adviceHistory}">
+        <div class="mt-3">
+            <h6 class="fw-bold text-dark mb-2">👨‍💼 Advisor Personalized Notes &amp; Guidance</h6>
+            <div class="row g-2">
+                <c:forEach var="a" items="${adviceHistory}">
+                    <c:if test="${not empty a.advisorComment || a.ruleName == 'ADVISOR_MANUAL'}">
+                        <div class="col-md-6">
+                            <div class="border rounded p-3 bg-white shadow-sm h-100">
+                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                    <strong class="text-teal"><c:out value="${a.title}"/></strong>
+                                    <span class="badge ${a.status == 'ACCEPTED' ? 'bg-success' : 'bg-primary'}"><c:out value="${a.status}"/></span>
+                                </div>
+                                <p class="small text-secondary mb-2"><c:out value="${a.explanation}"/></p>
+                                <c:if test="${not empty a.advisorComment}">
+                                    <div class="p-2 bg-light rounded border border-teal small text-dark">
+                                        <strong class="text-teal">Advisor Note:</strong> <c:out value="${a.advisorComment}"/>
+                                    </div>
+                                </c:if>
+                            </div>
+                        </div>
+                    </c:if>
+                </c:forEach>
+            </div>
+        </div>
+    </c:if>
+
+    <!-- Assigned Advisor Messages Dialog Quick-View -->
+    <c:if test="${not empty assignedAdvisor}">
+        <div class="card card-fintech mt-3 shadow-sm border">
+            <div class="card-header-clean d-flex justify-content-between align-items-center">
+                <h6><span>✉️</span> Direct Messages from Certified Advisor: <c:out value="${assignedAdvisor.name}"/></h6>
+                <a href="${pageContext.request.contextPath}/messages" class="btn btn-outline-primary btn-sm">Full Dialogue &rarr;</a>
+            </div>
+            <div class="card-body-clean p-3">
+                <c:choose>
+                    <c:when test="${empty advisorMessages}">
+                        <div class="text-muted small">No direct messages yet. <a href="${pageContext.request.contextPath}/messages">Click here to send a question to your advisor.</a></div>
+                    </c:when>
+                    <c:otherwise>
+                        <c:forEach var="m" items="${advisorMessages}">
+                            <div class="mb-2 d-flex flex-column ${m.senderId == sessionScope.userId ? 'align-items-end' : 'align-items-start'}">
+                                <div class="p-2 rounded ${m.senderId == sessionScope.userId ? 'bg-primary text-white' : 'bg-light border text-dark'} small" style="max-width: 80%;">
+                                    <c:out value="${m.body}"/>
+                                </div>
+                                <span class="text-muted" style="font-size: 0.65rem;"><c:out value="${m.createdAt}"/></span>
+                            </div>
+                        </c:forEach>
+                    </c:otherwise>
+                </c:choose>
+            </div>
+        </div>
+    </c:if>
 </div>
 
 <!-- Section 5: Expenses Table & Modal Management -->
 <div class="card card-fintech mb-4" id="expenses">
-    <div class="card-header-clean">
-        <h6><span>💳</span> Expense Ledger (<c:out value="${selectedMonth}"/>)</h6>
-        <button class="btn btn-indigo btn-sm" data-bs-toggle="modal" data-bs-target="#addExpenseModal">+ Add Expense</button>
+    <div class="card-header-clean d-flex justify-content-between align-items-center">
+        <div>
+            <h6 class="mb-0"><span>💳</span> Expense Ledger (<c:out value="${selectedMonth}"/>)</h6>
+            <span class="small text-muted">Daily discretionary transactions</span>
+        </div>
+        <div>
+            <a href="${pageContext.request.contextPath}/expenses/export?month=${selectedMonth}" class="btn btn-outline-secondary btn-sm me-2">
+                📥 Export CSV
+            </a>
+            <button class="btn btn-indigo btn-sm" data-bs-toggle="modal" data-bs-target="#addExpenseModal">+ Add Expense</button>
+        </div>
     </div>
     <div class="table-responsive">
         <table class="table table-fintech">

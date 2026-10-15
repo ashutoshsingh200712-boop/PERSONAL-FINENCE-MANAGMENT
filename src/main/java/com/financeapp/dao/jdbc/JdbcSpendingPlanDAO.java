@@ -145,7 +145,8 @@ public class JdbcSpendingPlanDAO implements SpendingPlanDAO {
         }
     }
 
-    public Optional<SpendingPlan> findById(Connection conn, long id) throws SQLException {
+    @Override
+    public Optional<SpendingPlan> findById(Connection conn, long id) {
         try (PreparedStatement stmt = conn.prepareStatement(SQL_FIND_BY_ID)) {
             stmt.setLong(1, id);
             try (ResultSet rs = stmt.executeQuery()) {
@@ -155,6 +156,8 @@ public class JdbcSpendingPlanDAO implements SpendingPlanDAO {
                     return Optional.of(plan);
                 }
             }
+        } catch (SQLException e) {
+            throw new DataAccessException("Failed to find spending plan by id: " + id, e);
         }
         return Optional.empty();
     }

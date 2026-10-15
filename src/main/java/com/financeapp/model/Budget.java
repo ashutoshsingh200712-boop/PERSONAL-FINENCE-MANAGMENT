@@ -18,6 +18,7 @@ public class Budget {
     private String budgetMonth; // Format: "YYYY-MM"
     private BigDecimal budgetLimit;
     private BigDecimal alertThreshold = new BigDecimal("80.00"); // default 80%
+    private String source = "MANUAL"; // "MANUAL" or "AI_PLAN"
     private LocalDateTime createdAt;
 
     public Budget() {
@@ -25,12 +26,18 @@ public class Budget {
 
     public Budget(Long id, Long userId, Long categoryId, String budgetMonth,
                   BigDecimal budgetLimit, BigDecimal alertThreshold, LocalDateTime createdAt) {
+        this(id, userId, categoryId, budgetMonth, budgetLimit, alertThreshold, "MANUAL", createdAt);
+    }
+
+    public Budget(Long id, Long userId, Long categoryId, String budgetMonth,
+                  BigDecimal budgetLimit, BigDecimal alertThreshold, String source, LocalDateTime createdAt) {
         setId(id);
         setUserId(userId);
         setCategoryId(categoryId);
         setBudgetMonth(budgetMonth);
         setBudgetLimit(budgetLimit);
         setAlertThreshold(alertThreshold);
+        setSource(source);
         setCreatedAt(createdAt);
     }
 
@@ -106,6 +113,14 @@ public class Budget {
             throw new IllegalArgumentException("Alert threshold percentage must be between 1 and 100: " + alertThreshold);
         }
         this.alertThreshold = alertThreshold.setScale(2, RoundingMode.HALF_UP);
+    }
+
+    public String getSource() {
+        return source != null ? source : "MANUAL";
+    }
+
+    public void setSource(String source) {
+        this.source = (source != null && !source.trim().isEmpty()) ? source.trim() : "MANUAL";
     }
 
     public LocalDateTime getCreatedAt() {

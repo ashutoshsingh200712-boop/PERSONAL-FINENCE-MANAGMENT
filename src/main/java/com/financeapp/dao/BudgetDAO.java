@@ -15,11 +15,17 @@ public interface BudgetDAO {
     long create(Connection conn, Budget budget);
 
     Optional<Budget> findById(long id);
+    Optional<Budget> findById(Connection conn, long id);
     Optional<Budget> findByUserCategoryAndMonth(long userId, long categoryId, String month);
+    Optional<Budget> findByUserCategoryAndMonth(Connection conn, long userId, long categoryId, String month);
     List<Budget> findByUserAndMonth(long userId, String month);
+    List<Budget> findByUserAndMonth(Connection conn, long userId, String month);
 
     boolean update(Budget budget);
     boolean update(Connection conn, Budget budget);
+
+    long upsert(Budget budget);
+    long upsert(Connection conn, Budget budget);
 
     boolean delete(long id);
     boolean delete(Connection conn, long id);

@@ -140,6 +140,64 @@
         <url-pattern>/admin/action</url-pattern>
     </servlet-mapping>
 
+    <servlet>
+        <servlet-name>BudgetServlet</servlet-name>
+        <servlet-class>com.financeapp.servlet.BudgetServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>BudgetServlet</servlet-name>
+        <url-pattern>/budgets</url-pattern>
+        <url-pattern>/budgets/accept-plan</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>GoalServlet</servlet-name>
+        <servlet-class>com.financeapp.servlet.GoalServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>GoalServlet</servlet-name>
+        <url-pattern>/goals</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>CsvExportServlet</servlet-name>
+        <servlet-class>com.financeapp.servlet.CsvExportServlet</servlet-class>
+        <async-supported>true</async-supported>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>CsvExportServlet</servlet-name>
+        <url-pattern>/expenses/export</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>AdvisorServlet</servlet-name>
+        <servlet-class>com.financeapp.servlet.AdvisorServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AdvisorServlet</servlet-name>
+        <url-pattern>/advisor/client</url-pattern>
+        <url-pattern>/advisor/action</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>MessageServlet</servlet-name>
+        <servlet-class>com.financeapp.servlet.MessageServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>MessageServlet</servlet-name>
+        <url-pattern>/messages</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>FeedbackServlet</servlet-name>
+        <servlet-class>com.financeapp.servlet.FeedbackServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>FeedbackServlet</servlet-name>
+        <url-pattern>/feedback</url-pattern>
+        <url-pattern>/admin/feedback</url-pattern>
+    </servlet-mapping>
+
     <!-- Global Error Pages -->
     <error-page>
         <error-code>404</error-code>

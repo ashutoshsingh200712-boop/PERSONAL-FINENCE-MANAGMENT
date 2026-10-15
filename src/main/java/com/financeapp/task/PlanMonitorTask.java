@@ -34,7 +34,7 @@ public class PlanMonitorTask implements Runnable {
     private static final Logger LOGGER = Logger.getLogger(PlanMonitorTask.class.getName());
 
     private final AtomicInteger runCounter = new AtomicInteger(0);
-    private final ConcurrentHashMap<Long, PlanStatus> lastKnownStatus = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Integer, PlanStatus> lastKnownStatus = new ConcurrentHashMap<>();
 
     private final SpendingPlanDAO spendingPlanDAO;
     private final ExpenseDAO expenseDAO;
@@ -53,10 +53,11 @@ public class PlanMonitorTask implements Runnable {
     @Override
     public void run() {
         int runNum = runCounter.incrementAndGet();
-        LOGGER.fine("Starting PlanMonitorTask execution #" + runNum);
+        LOGGER.info("Starting PlanMonitorTask execution #" + runNum);
 
         try (Connection conn = DBConnection.getConnection()) {
             executeWithConnection(conn);
+            LOGGER.info("Completed PlanMonitorTask execution #" + runNum + " successfully.");
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Error executing PlanMonitorTask on run #" + runNum + ": " + e.getMessage(), e);
         }
@@ -114,8 +115,9 @@ public class PlanMonitorTask implements Runnable {
         PlanStatus currentStatus = recalc.getStatus();
 
         // Check against last-known status in concurrent map
-        PlanStatus oldStatus = lastKnownStatus.get(planId);
-        lastKnownStatus.put(planId, currentStatus);
+        Integer planKey = (planId != null) ? planId.intValue() : 0;
+        PlanStatus oldStatus = lastKnownStatus.get(planKey);
+        lastKnownStatus.put(planKey, currentStatus);
 
         // 1. Status changes to OVER (or becomes OVER)
         if (currentStatus == PlanStatus.OVER && (oldStatus == null || oldStatus != PlanStatus.OVER)) {
@@ -153,7 +155,7 @@ public class PlanMonitorTask implements Runnable {
         return runCounter;
     }
 
-    public ConcurrentHashMap<Long, PlanStatus> getLastKnownStatus() {
+    public ConcurrentHashMap<Integer, PlanStatus> getLastKnownStatus() {
         return lastKnownStatus;
     }
 }

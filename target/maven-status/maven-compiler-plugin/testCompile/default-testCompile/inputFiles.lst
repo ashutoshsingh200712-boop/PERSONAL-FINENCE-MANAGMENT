@@ -1,7 +1,10 @@
 C:\working\PERSONAL FINENCE MANAGMENT\src\test\java\com\financeapp\dao\jdbc\JdbcDataLayerIntegrationTest.java
 C:\working\PERSONAL FINENCE MANAGMENT\src\test\java\com\financeapp\e2e\EndToEndFlowTest.java
 C:\working\PERSONAL FINENCE MANAGMENT\src\test\java\com\financeapp\listener\AppStartupListenerTest.java
+C:\working\PERSONAL FINENCE MANAGMENT\src\test\java\com\financeapp\model\BudgetUtilisationTest.java
+C:\working\PERSONAL FINENCE MANAGMENT\src\test\java\com\financeapp\model\GoalFeasibilityTest.java
 C:\working\PERSONAL FINENCE MANAGMENT\src\test\java\com\financeapp\planner\PlannerEngineTest.java
+C:\working\PERSONAL FINENCE MANAGMENT\src\test\java\com\financeapp\service\BudgetServiceTest.java
 C:\working\PERSONAL FINENCE MANAGMENT\src\test\java\com\financeapp\service\PlannerServiceMockitoTest.java
 C:\working\PERSONAL FINENCE MANAGMENT\src\test\java\com\financeapp\servlet\ServletFlowTest.java
 C:\working\PERSONAL FINENCE MANAGMENT\src\test\java\com\financeapp\servlet\WebSecurityFilterTest.java

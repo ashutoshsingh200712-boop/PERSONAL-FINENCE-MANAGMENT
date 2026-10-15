@@ -32,6 +32,10 @@ class JdbcDataLayerIntegrationTest {
     private static BudgetDAO budgetDAO;
     private static IncomeDAO incomeDAO;
     private static SpendingPlanDAO spendingPlanDAO;
+    private static GoalDAO goalDAO;
+    private static AdviceDAO adviceDAO;
+    private static MessageDAO messageDAO;
+    private static FeedbackDAO feedbackDAO;
 
     @BeforeAll
     static void setUpDatabase() throws Exception {
@@ -40,6 +44,10 @@ class JdbcDataLayerIntegrationTest {
 
         // Initialize schema in H2 MySQL mode
         try (Statement stmt = testMasterConn.createStatement()) {
+            stmt.execute("DROP TABLE IF EXISTS feedback");
+            stmt.execute("DROP TABLE IF EXISTS messages");
+            stmt.execute("DROP TABLE IF EXISTS advice");
+            stmt.execute("DROP TABLE IF EXISTS goals");
             stmt.execute("DROP TABLE IF EXISTS audit_logs");
             stmt.execute("DROP TABLE IF EXISTS notifications");
             stmt.execute("DROP TABLE IF EXISTS budgets");
@@ -146,10 +154,58 @@ class JdbcDataLayerIntegrationTest {
                     "budget_month CHAR(7) NOT NULL, " +
                     "budget_limit DECIMAL(12,2) NOT NULL, " +
                     "alert_threshold DECIMAL(5,2) NOT NULL DEFAULT 80.00, " +
+                    "source VARCHAR(20) NOT NULL DEFAULT 'MANUAL', " +
                     "created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
                     "CONSTRAINT fk_budgets_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE, " +
                     "CONSTRAINT fk_budgets_cat FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE RESTRICT, " +
                     "CONSTRAINT uq_budgets_user_cat_month UNIQUE (user_id, category_id, budget_month)" +
+                    ")");
+
+            stmt.execute("CREATE TABLE goals (" +
+                    "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
+                    "user_id BIGINT NOT NULL, " +
+                    "name VARCHAR(150) NOT NULL, " +
+                    "target_amount DECIMAL(12,2) NOT NULL, " +
+                    "current_amount DECIMAL(12,2) NOT NULL DEFAULT 0.00, " +
+                    "target_date DATE NOT NULL, " +
+                    "created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
+                    "CONSTRAINT fk_goals_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE" +
+                    ")");
+
+            stmt.execute("CREATE TABLE advice (" +
+                    "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
+                    "user_id BIGINT NOT NULL, " +
+                    "plan_id BIGINT NULL, " +
+                    "rule_name VARCHAR(100) NOT NULL, " +
+                    "title VARCHAR(150) NOT NULL, " +
+                    "explanation TEXT NOT NULL, " +
+                    "status VARCHAR(20) NOT NULL DEFAULT 'NEW', " +
+                    "advisor_comment TEXT NULL, " +
+                    "created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
+                    "CONSTRAINT fk_advice_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE, " +
+                    "CONSTRAINT fk_advice_plan FOREIGN KEY (plan_id) REFERENCES spending_plans (id) ON DELETE SET NULL" +
+                    ")");
+
+            stmt.execute("CREATE TABLE messages (" +
+                    "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
+                    "sender_id BIGINT NOT NULL, " +
+                    "receiver_id BIGINT NOT NULL, " +
+                    "body TEXT NOT NULL, " +
+                    "is_read BOOLEAN NOT NULL DEFAULT FALSE, " +
+                    "created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
+                    "CONSTRAINT fk_msg_sender FOREIGN KEY (sender_id) REFERENCES users (id) ON DELETE CASCADE, " +
+                    "CONSTRAINT fk_msg_receiver FOREIGN KEY (receiver_id) REFERENCES users (id) ON DELETE CASCADE" +
+                    ")");
+
+            stmt.execute("CREATE TABLE feedback (" +
+                    "id BIGINT AUTO_INCREMENT PRIMARY KEY, " +
+                    "user_id BIGINT NOT NULL, " +
+                    "subject VARCHAR(200) NOT NULL, " +
+                    "body TEXT NOT NULL, " +
+                    "status VARCHAR(20) NOT NULL DEFAULT 'OPEN', " +
+                    "admin_reply TEXT NULL, " +
+                    "created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP, " +
+                    "CONSTRAINT fk_feedback_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE" +
                     ")");
 
             stmt.execute("CREATE TABLE notifications (" +
@@ -198,6 +254,10 @@ class JdbcDataLayerIntegrationTest {
         budgetDAO = new JdbcBudgetDAO();
         incomeDAO = new JdbcIncomeDAO();
         spendingPlanDAO = new JdbcSpendingPlanDAO();
+        goalDAO = new JdbcGoalDAO();
+        adviceDAO = new JdbcAdviceDAO();
+        messageDAO = new JdbcMessageDAO();
+        feedbackDAO = new JdbcFeedbackDAO();
     }
 
     @AfterAll
@@ -495,5 +555,111 @@ class JdbcDataLayerIntegrationTest {
         // Verify both steps committed successfully
         assertTrue(expenseDAO.findById(valid1Id).isPresent(), "Valid Step 1 expense must exist");
         assertTrue(expenseDAO.findById(valid2Id).isPresent(), "Valid Step 2 expense must exist");
+    }
+
+    @Test
+    @Order(6)
+    @DisplayName("Verify GoalDAO, AdviceDAO, MessageDAO, FeedbackDAO, and BudgetDAO Upsert")
+    void testNewModulesIntegration() {
+        User user = new RegularUser();
+        user.setName("New Module User");
+        user.setEmail("newmod.user@integration.test");
+        user.setPasswordHash("$2a$10$hashedpw");
+        long userId = userDAO.create(user);
+
+        User advisor = new Advisor();
+        advisor.setName("New Module Advisor");
+        advisor.setEmail("newmod.advisor@integration.test");
+        advisor.setPasswordHash("$2a$10$hashedpw");
+        long advisorId = userDAO.create(advisor);
+
+        // 1. GoalDAO Tests
+        Goal goal = new Goal(null, userId, "Emergency Fund", new BigDecimal("5000.00"),
+                new BigDecimal("1000.00"), LocalDate.now().plusMonths(6), LocalDateTime.now());
+        long goalId = goalDAO.create(goal);
+        assertTrue(goalId > 0);
+
+        Optional<Goal> foundGoal = goalDAO.findById(goalId);
+        assertTrue(foundGoal.isPresent());
+        assertEquals("Emergency Fund", foundGoal.get().getName());
+        assertEquals(new BigDecimal("5000.00"), foundGoal.get().getTargetAmount());
+
+        foundGoal.get().setCurrentAmount(new BigDecimal("1500.00"));
+        assertTrue(goalDAO.update(foundGoal.get()));
+        assertEquals(new BigDecimal("1500.00"), goalDAO.findById(goalId).orElseThrow().getCurrentAmount());
+
+        List<Goal> userGoals = goalDAO.findByUserId(userId);
+        assertFalse(userGoals.isEmpty());
+
+        // 2. AdviceDAO Tests
+        Advice advice = new Advice(null, userId, null, "HIGH_DINING",
+                "Reduce Dining Out", "Dining expenses exceed 30% of disposable income.",
+                Advice.Status.NEW, null, LocalDateTime.now());
+        long adviceId = adviceDAO.create(advice);
+        assertTrue(adviceId > 0);
+
+        Optional<Advice> foundAdvice = adviceDAO.findById(adviceId);
+        assertTrue(foundAdvice.isPresent());
+        assertEquals(Advice.Status.NEW, foundAdvice.get().getStatus());
+
+        assertTrue(adviceDAO.updateStatus(adviceId, Advice.Status.ACCEPTED));
+        assertTrue(adviceDAO.updateAdvisorComment(adviceId, "Great decision to accept this advice!"));
+
+        Advice updatedAdvice = adviceDAO.findById(adviceId).orElseThrow();
+        assertEquals(Advice.Status.ACCEPTED, updatedAdvice.getStatus());
+        assertEquals("Great decision to accept this advice!", updatedAdvice.getAdvisorComment());
+
+        // 3. MessageDAO Tests
+        Message msg = new Message(null, advisorId, userId, "Hello, please review your monthly budget.", false, LocalDateTime.now());
+        long msgId = messageDAO.create(msg);
+        assertTrue(msgId > 0);
+
+        List<Message> convo = messageDAO.findConversation(advisorId, userId);
+        assertFalse(convo.isEmpty());
+        assertTrue(messageDAO.findUnreadByReceiverId(userId).size() > 0);
+
+        assertTrue(messageDAO.markConversationAsRead(userId, advisorId));
+        assertEquals(0, messageDAO.findUnreadByReceiverId(userId).size());
+
+        // 4. FeedbackDAO Tests
+        Feedback fb = new Feedback(null, userId, "App UI suggestion", "Could we add dark mode?",
+                Feedback.Status.OPEN, null, LocalDateTime.now());
+        long fbId = feedbackDAO.create(fb);
+        assertTrue(fbId > 0);
+
+        Optional<Feedback> foundFb = feedbackDAO.findById(fbId);
+        assertTrue(foundFb.isPresent());
+        assertEquals(Feedback.Status.OPEN, foundFb.get().getStatus());
+
+        assertTrue(feedbackDAO.replyAndClose(fbId, "Dark mode is planned for the next release. Thank you!", Feedback.Status.CLOSED));
+        Feedback closedFb = feedbackDAO.findById(fbId).orElseThrow();
+        assertEquals(Feedback.Status.CLOSED, closedFb.getStatus());
+        assertEquals("Dark mode is planned for the next release. Thank you!", closedFb.getAdminReply());
+
+        // 5. BudgetDAO Upsert Tests
+        Category testCat = new Category(null, "Test Category New Mod", "Test Cat", true, LocalDateTime.now());
+        long testCatId = categoryDAO.create(testCat);
+
+        Budget b1 = new Budget(null, userId, testCatId, "2026-10",
+                new BigDecimal("400.00"), new BigDecimal("80.00"), "AI_PLAN", LocalDateTime.now());
+        long b1Id = budgetDAO.upsert(b1);
+        assertTrue(b1Id > 0);
+
+        Budget b1Fetched = budgetDAO.findByUserCategoryAndMonth(userId, testCatId, "2026-10").orElseThrow();
+        assertEquals(new BigDecimal("400.00"), b1Fetched.getBudgetLimit());
+        assertEquals("AI_PLAN", b1Fetched.getSource());
+
+        // Upsert to update existing limit and switch source to MANUAL
+        Budget b1Update = new Budget(null, userId, testCatId, "2026-10",
+                new BigDecimal("450.00"), new BigDecimal("85.00"), "MANUAL", LocalDateTime.now());
+        budgetDAO.upsert(b1Update);
+
+        Budget b1Updated = budgetDAO.findByUserCategoryAndMonth(userId, testCatId, "2026-10").orElseThrow();
+        assertEquals(new BigDecimal("450.00"), b1Updated.getBudgetLimit());
+        assertEquals("MANUAL", b1Updated.getSource());
+
+        // Clean up goal
+        assertTrue(goalDAO.delete(goalId));
+        assertTrue(goalDAO.findById(goalId).isEmpty());
     }
 }

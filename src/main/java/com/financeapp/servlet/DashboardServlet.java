@@ -5,7 +5,7 @@ import com.financeapp.dao.jdbc.*;
 import com.financeapp.model.*;
 import com.financeapp.planner.PlanStatus;
 import com.financeapp.planner.RecalculationResult;
-import com.financeapp.service.PlannerService;
+import com.financeapp.service.*;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -37,6 +37,10 @@ public class DashboardServlet extends HttpServlet {
     private final AuditDAO auditDAO = new JdbcAuditDAO();
     private final NotificationDAO notificationDAO = new JdbcNotificationDAO();
     private final PlannerService plannerService = new PlannerService();
+    private final BudgetService budgetService = new BudgetService();
+    private final GoalService goalService = new GoalService();
+    private final AdviceDAO adviceDAO = new JdbcAdviceDAO();
+    private final MessageDAO messageDAO = new JdbcMessageDAO();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -184,6 +188,29 @@ public class DashboardServlet extends HttpServlet {
 
         // 7. Chart.js Data Preparation
         prepareChartData(req, categories, spentPerCategory);
+
+        // 8. Category Budget Utilisation Details (70% info, 90% warning, 100%+ critical)
+        List<BudgetService.CategoryBudgetDetail> budgetDetails = budgetService.getBudgetUtilisationDetails(userId, month);
+        req.setAttribute("budgetDetails", budgetDetails);
+
+        // 9. Savings Goals & Feasibility
+        List<GoalFeasibilityResult> goalResults = goalService.evaluateUserGoals(userId);
+        req.setAttribute("goalResults", goalResults);
+
+        // 10. Financial Advice History & Advisor Comments
+        List<Advice> adviceHistory = adviceDAO.findByUserId(userId);
+        req.setAttribute("adviceHistory", adviceHistory);
+
+        // 11. Assigned Advisor & Messages
+        Optional<User> userOpt = userDAO.findById(userId);
+        User currentUser = userOpt.orElse(null);
+        req.setAttribute("currentUser", currentUser);
+        if (currentUser != null && currentUser.getAdvisorId() != null) {
+            User advisor = userDAO.findById(currentUser.getAdvisorId()).orElse(null);
+            req.setAttribute("assignedAdvisor", advisor);
+            List<Message> advisorMessages = messageDAO.findConversation(userId, currentUser.getAdvisorId());
+            req.setAttribute("advisorMessages", advisorMessages);
+        }
 
         req.getRequestDispatcher("/WEB-INF/views/user/dashboard.jsp").forward(req, resp);
     }

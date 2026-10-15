@@ -158,9 +158,12 @@
                                     </c:choose>
                                 </td>
                                 <td class="text-end">
+                                    <a href="${pageContext.request.contextPath}/advisor/client?id=${client.id}" class="btn btn-teal btn-sm py-0 px-2 me-1">
+                                        Supervise &rarr;
+                                    </a>
                                     <button class="btn btn-outline-secondary btn-sm py-0 px-2"
                                             data-bs-toggle="modal" data-bs-target="#clientModal${client.id}">
-                                        View Details
+                                        Quick View
                                     </button>
                                 </td>
                             </tr>

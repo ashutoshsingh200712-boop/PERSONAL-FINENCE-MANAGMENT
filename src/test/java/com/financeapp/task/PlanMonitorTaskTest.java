@@ -70,7 +70,7 @@ class PlanMonitorTaskTest {
         task.executeWithConnection(conn);
 
         // Verify status recorded in ConcurrentHashMap
-        assertEquals(PlanStatus.OVER, task.getLastKnownStatus().get(101L));
+        assertEquals(PlanStatus.OVER, task.getLastKnownStatus().get(101));
 
         // Verify notification inserted
         ArgumentCaptor<Notification> captor = ArgumentCaptor.forClass(Notification.class);
@@ -101,7 +101,7 @@ class PlanMonitorTaskTest {
                 .thenReturn(List.of(expense));
 
         // Pre-populate ConcurrentHashMap with OVER status
-        task.getLastKnownStatus().put(102L, PlanStatus.OVER);
+        task.getLastKnownStatus().put(102, PlanStatus.OVER);
 
         task.executeWithConnection(conn);
 
@@ -129,11 +129,11 @@ class PlanMonitorTaskTest {
                 .thenReturn(List.of(expense));
 
         // Pre-populate with ON_TRACK
-        task.getLastKnownStatus().put(103L, PlanStatus.ON_TRACK);
+        task.getLastKnownStatus().put(103, PlanStatus.ON_TRACK);
 
         task.executeWithConnection(conn);
 
-        assertEquals(PlanStatus.UNDER, task.getLastKnownStatus().get(103L));
+        assertEquals(PlanStatus.UNDER, task.getLastKnownStatus().get(103));
 
         ArgumentCaptor<Notification> captor = ArgumentCaptor.forClass(Notification.class);
         verify(notificationDAO, times(1)).create(eq(conn), captor.capture());

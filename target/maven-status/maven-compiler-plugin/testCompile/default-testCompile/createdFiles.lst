@@ -2,9 +2,12 @@ com\financeapp\task\RecurringEntryTaskTest.class
 com\financeapp\e2e\EndToEndFlowTest.class
 com\financeapp\task\PlanMonitorTaskTest.class
 com\financeapp\util\DBConnectionTest.class
+com\financeapp\model\BudgetUtilisationTest.class
 com\financeapp\planner\PlannerEngineTest.class
 com\financeapp\service\PlannerServiceMockitoTest$5.class
+com\financeapp\model\GoalFeasibilityTest.class
 com\financeapp\servlet\ServletFlowTest.class
+com\financeapp\service\BudgetServiceTest.class
 com\financeapp\service\PlannerServiceMockitoTest$6.class
 com\financeapp\service\PlannerServiceMockitoTest$2.class
 com\financeapp\listener\AppStartupListenerTest.class

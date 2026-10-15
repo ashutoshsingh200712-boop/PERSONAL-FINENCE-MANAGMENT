@@ -15,6 +15,10 @@
                     <span class="nav-icon">👥</span>
                     <span>User Accounts</span>
                 </a>
+                <a href="${pageContext.request.contextPath}/admin/feedback" class="sidebar-nav-item ${activeNav == 'feedback' ? 'active' : ''}">
+                    <span class="nav-icon">💬</span>
+                    <span>Feedback Tickets</span>
+                </a>
                 <a href="${pageContext.request.contextPath}/admin/dashboard#settings" class="sidebar-nav-item ${activeNav == 'settings' ? 'active' : ''}">
                     <span class="nav-icon">⚙️</span>
                     <span>System Settings</span>
@@ -28,7 +32,7 @@
             <%-- ADVISOR MENU --%>
             <c:when test="${sessionScope.role == 'ADVISOR'}">
                 <div class="sidebar-heading">Advisory Portal</div>
-                <a href="${pageContext.request.contextPath}/advisor/dashboard" class="sidebar-nav-item ${activeNav == 'portfolio' ? 'active' : 'active'}">
+                <a href="${pageContext.request.contextPath}/advisor/dashboard" class="sidebar-nav-item ${activeNav == 'portfolio' ? 'active' : ''}">
                     <span class="nav-icon">👥</span>
                     <span>Client Portfolio</span>
                 </a>
@@ -41,17 +45,25 @@
                     <span class="nav-icon">📊</span>
                     <span>Dashboard</span>
                 </a>
-                <a href="${pageContext.request.contextPath}/user/dashboard#planner" class="sidebar-nav-item ${activeNav == 'planner' ? 'active' : ''}">
-                    <span class="nav-icon">🎯</span>
-                    <span>AI Planner</span>
+                <a href="${pageContext.request.contextPath}/budgets" class="sidebar-nav-item ${activeNav == 'budgets' ? 'active' : ''}">
+                    <span class="nav-icon">💼</span>
+                    <span>Budgets</span>
+                </a>
+                <a href="${pageContext.request.contextPath}/goals" class="sidebar-nav-item ${activeNav == 'goals' ? 'active' : ''}">
+                    <span class="nav-icon">🏆</span>
+                    <span>Savings Goals</span>
+                </a>
+                <a href="${pageContext.request.contextPath}/messages" class="sidebar-nav-item ${activeNav == 'messages' ? 'active' : ''}">
+                    <span class="nav-icon">✉️</span>
+                    <span>Advisor Messages</span>
                 </a>
                 <a href="${pageContext.request.contextPath}/user/dashboard#expenses" class="sidebar-nav-item ${activeNav == 'expenses' ? 'active' : ''}">
                     <span class="nav-icon">💳</span>
                     <span>Expenses</span>
                 </a>
-                <a href="${pageContext.request.contextPath}/user/dashboard#advice" class="sidebar-nav-item ${activeNav == 'advice' ? 'active' : ''}">
-                    <span class="nav-icon">💡</span>
-                    <span>Smart Advice</span>
+                <a href="${pageContext.request.contextPath}/feedback" class="sidebar-nav-item ${activeNav == 'feedback' ? 'active' : ''}">
+                    <span class="nav-icon">💬</span>
+                    <span>Feedback &amp; Help</span>
                 </a>
             </c:otherwise>
         </c:choose>
